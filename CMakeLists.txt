@@ -4,6 +4,8 @@ project(cheddar-exp LANGUAGES CUDA CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+add_subdirectory(thirdparty/libtommath)
 add_subdirectory(thirdparty/cheddar-fhe)
 add_subdirectory(samples)

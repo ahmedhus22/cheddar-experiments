@@ -1,2 +1,2 @@
-add_executable(matvec matvec.cpp)
+add_library(matvec matvec.cpp)
 target_link_libraries(matvec PRIVATE cheddar)
