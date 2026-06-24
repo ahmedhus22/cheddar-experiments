@@ -1,3 +1,6 @@
 [submodule "thirdparty/cheddar-fhe"]
 	path = thirdparty/cheddar-fhe
 	url = https://github.com/scale-snu/cheddar-fhe
+[submodule "thirdparty/libtommath"]
+	path = thirdparty/libtommath
+	url = https://github.com/libtom/libtommath.git
