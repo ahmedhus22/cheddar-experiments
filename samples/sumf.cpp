@@ -100,12 +100,36 @@ std::vector<Ct> simple_sum(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<C
   ctx->Add(ct10, ct8, ct9);
   Pt pt;
   std::vector<Complex> pt_complex(v8.begin(), v8.end());
-  encoder.Encode(pt, 0, ctx->param_.GetScale(0), pt_complex);
+  encoder.Encode(pt, 5, ctx->param_.GetScale(5), pt_complex);
   Ct ct11;
+  std::cout
+    << "ct level = " << ctx->param_.NPToLevel(ct10.GetNP())
+    << " np = "
+    << ct10.GetNP().num_main_
+    << '\n';
+
+  std::cout
+    << "pt level = " << ctx->param_.NPToLevel(pt.GetNP())
+    << " np = "
+    << pt.GetNP().num_main_
+    << '\n';
   ctx->Mult(ct11, ct10, pt);
   Ct ct12;
+  std::cout<<"rescale 1"<<std::endl;
   ctx->Rescale(ct12, ct11);
   Ct ct13;
+  encoder.Encode(pt, 4, ctx->param_.GetScale(4), pt_complex);
+  std::cout
+    << "ct level = " << ctx->param_.NPToLevel(ct12.GetNP())
+    << " np = "
+    << ct12.GetNP().num_main_
+    << '\n';
+
+std::cout
+    << "pt level = " << ctx->param_.NPToLevel(pt.GetNP())
+    << " np = "
+    << pt.GetNP().num_main_
+    << '\n';
   ctx->Mult(ct13, ct12, pt);
   Ct ct14;
   ctx->HRot(ct14, ct13, ui.GetRotationKey(v1), v1);
@@ -113,12 +137,25 @@ std::vector<Ct> simple_sum(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<C
   ctx->Rescale(ct15, ct14);
   Pt pt1;
   std::vector<Complex> pt1_complex(v9.begin(), v9.end());
-  encoder.Encode(pt1, 0, ctx->param_.GetScale(0), pt1_complex);
+  encoder.Encode(pt1, 3, ctx->param_.GetScale(3), pt1_complex);
   Ct ct16;
+  std::cout
+    << "ct level = " << ctx->param_.NPToLevel(ct15.GetNP())
+    << " np = "
+    << ct10.GetNP().num_main_
+    << '\n';
+
+  std::cout
+    << "pt level = " << ctx->param_.NPToLevel(pt1.GetNP())
+    << " np = "
+    << pt.GetNP().num_main_
+    << '\n';
   ctx->Mult(ct16, ct15, pt1);
   Ct ct17;
+  std::cout<<"rescale 3"<<std::endl;
   ctx->Rescale(ct17, ct16);
   Ct ct18;
+  encoder.Encode(pt1, 2, ctx->param_.GetScale(2), pt1_complex);
   ctx->Mult(ct18, ct17, pt1);
   Ct ct19;
   ctx->HRot(ct19, ct18, ui.GetRotationKey(v6), v6);
@@ -126,12 +163,24 @@ std::vector<Ct> simple_sum(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<C
   ctx->Rescale(ct20, ct19);
   Pt pt2;
   std::vector<Complex> pt2_complex(v10.begin(), v10.end());
-  encoder.Encode(pt2, 0, ctx->param_.GetScale(0), pt2_complex);
+  encoder.Encode(pt2, 1, ctx->param_.GetScale(1), pt2_complex);
   Ct ct21;
+  std::cout
+    << "ct level = " << ctx->param_.NPToLevel(ct20.GetNP())
+    << " np = "
+    << ct10.GetNP().num_main_
+    << '\n';
+
+std::cout
+    << "pt level = " << ctx->param_.NPToLevel(pt2.GetNP())
+    << " np = "
+    << pt.GetNP().num_main_
+    << '\n';
   ctx->Mult(ct21, ct20, pt2);
   std::vector<Ct> v11;
   v11.resize(1);
   Ct ct22;
+  std::cout<<"rescale 5"<<std::endl;
   ctx->Rescale(ct22, ct21);
   std::vector<Ct> v12;
   v12.resize(1);
@@ -162,9 +211,21 @@ std::vector<Ct> simple_sum__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, cons
   std::vector<double> v15(v7.begin() + 0 * 1024 + 0, v7.begin() + 0 * 1024 + 0 + 1024);
   Pt pt;
   std::vector<Complex> pt_complex(v15.begin(), v15.end());
-  encoder.Encode(pt, 0, ctx->param_.GetScale(0), pt_complex);
+  encoder.Encode(pt, 5, ctx->param_.GetScale(5), pt_complex);
   Ct ct;
   ui.Encrypt(ct, pt);
+  std::cout << "NP = "
+          << ct.GetNP().num_main_
+          << ", level = "
+          << ctx->param_.NPToLevel(ct.GetNP())
+          << '\n';
+ std::cout << "Plaintext NP: "
+          << pt.GetNP().num_main_ << ", "
+          << pt.GetNP().num_aux_ << '\n';
+
+std::cout << "Ciphertext NP: "
+          << ct.GetNP().num_main_ << ", "
+          << ct.GetNP().num_aux_ << '\n';
   std::vector<Ct> v16;
   v16.reserve(1);
   Ct ct_c1;

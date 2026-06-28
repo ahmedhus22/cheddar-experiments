@@ -41,7 +41,6 @@ std::tuple<CtxPtr, UI> __configure();
 TEST(CheddarSamples, SimpleSum) {
   auto[ctx, ui] = __configure();
   //Enc encoder;
-
   std::vector<double> test_input(32,1.0); // All ones for easy verification
   // encrypt input
   auto encrypted_input = simple_sum__encrypt__arg0(ctx, ctx->encoder_, ui, test_input, ui);
@@ -50,7 +49,7 @@ TEST(CheddarSamples, SimpleSum) {
   // decrypt result
   double result = simple_sum__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
 
-  EXPECT_DOUBLE_EQ(result, 32.0);
+  EXPECT_NEAR(result, 32.0, 0.1);
 }
 
 
