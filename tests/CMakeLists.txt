@@ -25,5 +25,15 @@ target_link_libraries(
   fhe_sumf
 )
 
+add_executable(mv_identity_test mv_identity_test.cpp)
+target_link_libraries(
+  mv_identity_test
+  PRIVATE
+  GTest::gtest_main
+  cheddar
+  nlohmann_json::nlohmann_json
+  fhe_mv_identity
+)
+
 include(GoogleTest)
 gtest_discover_tests(sumf_test)
