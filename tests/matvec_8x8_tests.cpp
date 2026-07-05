@@ -38,7 +38,7 @@ std::vector<Ct> matvec_identity__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui,
 std::vector<double> matvec_identity__decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1);
 std::tuple<CtxPtr, UI> __configure();
 
-TEST(CheddarSamples, MVIdentity) {
+TEST(MatVec8x8, MVIdentity) {
   auto[ctx, ui] = __configure();
   std::vector<double> test_input(8,1.0); // All ones for easy verification
   // encrypt input
