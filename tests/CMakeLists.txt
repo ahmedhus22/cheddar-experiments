@@ -36,4 +36,4 @@ target_link_libraries(
 )
 
 include(GoogleTest)
-gtest_discover_tests(sumf_test)
+gtest_discover_tests(sumf_test mv_identity_test)

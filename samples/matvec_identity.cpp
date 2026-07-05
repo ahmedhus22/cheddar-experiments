@@ -292,15 +292,15 @@ std::vector<double> matvec_identity__decrypt__result0(CtxPtr ctx, Enc& encoder, 
 }
 
 std::tuple<CtxPtr, UI> __configure() {
-  static std::vector<word> main_primes = {1073742881ULL, 1073742721ULL, 1073741441ULL, 1073741857ULL, 524353ULL};
-  static std::vector<word> aux_primes = {1073740609ULL, 1073739937ULL, 1073739649ULL};
+  static std::vector<word> main_primes = {36028797017456641ULL, 35184373006337ULL, 35184370941953ULL, 35184372744193ULL, 35184371138561ULL, 35184372121601ULL};
+  static std::vector<word> aux_primes = {1152921504607338497ULL, 1152921504608747521ULL};
   static std::vector<std::pair<int, int>> level_config = []() {
     std::vector<std::pair<int, int>> lc;
     for (int i = 1; i <= static_cast<int>(main_primes.size()); ++i)
       lc.push_back({i, 0});
     return lc;
   }();
-  static Param param(4, static_cast<double>(1ULL << 45), static_cast<int>(main_primes.size()) - 1, level_config, main_primes, aux_primes);
+  static Param param(14, static_cast<double>(1ULL << 45), static_cast<int>(main_primes.size()) - 1, level_config, main_primes, aux_primes);
   auto ctx = Context<word>::Create(param);
   UI ui(ctx);
   ui.PrepareRotationKey(1, static_cast<int>(main_primes.size()) - 1);

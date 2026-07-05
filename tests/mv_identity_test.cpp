@@ -40,25 +40,16 @@ std::tuple<CtxPtr, UI> __configure();
 
 TEST(CheddarSamples, MVIdentity) {
   auto[ctx, ui] = __configure();
-
   std::vector<double> test_input(8,1.0); // All ones for easy verification
   // encrypt input
   auto encrypted_input = matvec_identity__encrypt__arg0(ctx, ctx->encoder_, ui, test_input, ui);
-  std::cout << "encrypted_input size: " << encrypted_input.size() << std::endl;
   // matvec_identity on encrypted input
   auto encrypted_result = matvec_identity(ctx, ctx->encoder_, ui, encrypted_input);
-  std::cout << "encrypted_result size: " << encrypted_result.size() << std::endl;
   // decrypt result
   auto result = matvec_identity__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
 
-  EXPECT_DOUBLE_EQ(8.0, 8.0);
-}
-
-
-// Demonstrate some basic assertions.
-TEST(HelloTest, BasicAssertions) {
-  // Expect two strings not to be equal.
-  EXPECT_STRNE("hello", "world");
-  // Expect equality.
-  EXPECT_EQ(7 * 6, 42);
+  for (auto &val : result) {
+    EXPECT_NEAR(val, 1.0, 1e-6);
+  }
+  EXPECT_EQ(result.size(), 8);
 }
