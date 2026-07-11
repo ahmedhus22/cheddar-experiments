@@ -63,6 +63,15 @@ TEST(CheddarSamples, AlexNetTinyRandom) {
   out.write(reinterpret_cast<const char*>(result.data()),
           result.size() * sizeof(double));
 
+  std::filesystem::path torchPath =
+    std::filesystem::path(TEST_DATA_DIR) / "torch_output.bin";
+  std::ifstream torch_in(torchPath, std::ios::binary);
+  std::vector<double> torch_output(1 * 10);
+  torch_in.read(reinterpret_cast<char*>(torch_output.data()), torch_output.size() * sizeof(double));
+
   // Compare the result with pytorch implementation
-  EXPECT_EQ(0.0, 0.0);  // TODO: Implement comparison with PyTorch output
+  for (size_t i = 0; i < result.size(); ++i) {
+    EXPECT_NEAR(result[i], torch_output[i], 1e-6);
+  }
+  EXPECT_EQ(result.size(), torch_output.size());
 }

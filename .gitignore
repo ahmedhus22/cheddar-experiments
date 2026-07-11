@@ -76,6 +76,3 @@ venv/
 
 # Pytorch model files
 *.pt
-testdata/
-input.bin
-output.bin
