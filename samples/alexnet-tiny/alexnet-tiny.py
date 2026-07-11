@@ -117,7 +117,7 @@ if __name__ == "__main__":
   print(y)
 
   # write raw floats for C++
-  testdata_dir = Path(__file__).parent.parent / "tests" / "testdata"
+  testdata_dir = Path(__file__).parents[2] / "tests" / "testdata"
   testdata_dir.mkdir(exist_ok=True)
 
   x = x.double()  # convert to double for C++ test

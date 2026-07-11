@@ -68,6 +68,9 @@ vcpkg_installed/
 Testing/
 .cache/
 
+# Editor config files
+.vscode/
+
 # Python Environment
 venv/
 
