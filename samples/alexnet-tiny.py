@@ -109,8 +109,19 @@ if __name__ == "__main__":
     model.fc4.weight.copy_(wf)
     model.fc4.bias.copy_(bf)
   
-  x = torch.randn(1, 3, 16, 16)
+  torch.manual_seed(42)
+  x = torch.randn(1, 3, 16, 16, dtype=torch.float32)
 
-  y = model(x)
+  with torch.no_grad():
+    y = model(x)
+  print(y)
 
-  print(y.shape)      # torch.Size([1, 10])
+  # write raw floats for C++
+  testdata_dir = Path(__file__).parent.parent / "tests" / "testdata"
+  testdata_dir.mkdir(exist_ok=True)
+
+  x = x.double()  # convert to double for C++ test
+  x.numpy().astype("float64").tofile(testdata_dir / "input.bin")
+
+  y = y.double()  # convert to double for C++ test
+  y.numpy().astype("float64").tofile(testdata_dir / "torch_output.bin")

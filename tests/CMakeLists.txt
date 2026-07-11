@@ -35,5 +35,18 @@ target_link_libraries(
   fhe_matvec_8x8
 )
 
+add_executable(alexnet_tiny_tests alexnet-tiny_tests.cpp)
+target_link_libraries(
+  alexnet_tiny_tests
+  PRIVATE
+  GTest::gtest_main
+  cheddar
+  nlohmann_json::nlohmann_json
+  alexnet_tiny
+)
+
+target_compile_definitions(alexnet_tiny_tests PRIVATE
+  TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+
 include(GoogleTest)
 gtest_discover_tests(sumf_test matvec_8x8_tests)
