@@ -48,5 +48,14 @@ target_link_libraries(
 target_compile_definitions(alexnet_tiny_tests PRIVATE
   TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
+add_executable(alexnet_tiny_profile alexnet-tiny_profile.cpp)
+target_link_libraries(
+  alexnet_tiny_profile
+  PRIVATE
+  cheddar
+  nlohmann_json::nlohmann_json
+  alexnet_tiny
+)
+
 include(GoogleTest)
 gtest_discover_tests(sumf_test matvec_8x8_tests)
