@@ -73,6 +73,7 @@ Testing/
 
 # Python Environment
 venv/
+mlir_venv
 
 # Pytorch model files
 *.pt
