@@ -1,28 +1,28 @@
 #map = affine_map<(d0, d1) -> (d0, d1)>
 module {
-  func.func @main(%arg0: tensor<8x16xf32>) -> tensor<8x16xf32> {
+  func.func @main(%arg0: tensor<7x16xf32> {secret.secret}) -> tensor<7x16xf32> {
     %cst = arith.constant 0.000000e+00 : f32
     %cst_0 = arith.constant dense_resource<torch_tensor_16_16_torch.float32_2> : tensor<16x16xf32>
     %cst_1 = arith.constant dense_resource<torch_tensor_16_16_torch.float32_1> : tensor<16x16xf32>
     %cst_2 = arith.constant dense_resource<torch_tensor_16_16_torch.float32> : tensor<16x16xf32>
     %cst_3 = arith.constant 2.500000e-01 : f32
-    %0 = tensor.empty() : tensor<8x16xf32>
-    %1 = linalg.fill ins(%cst : f32) outs(%0 : tensor<8x16xf32>) -> tensor<8x16xf32>
-    %2 = linalg.matmul ins(%arg0, %cst_2 : tensor<8x16xf32>, tensor<16x16xf32>) outs(%1 : tensor<8x16xf32>) -> tensor<8x16xf32>
-    %3 = linalg.matmul ins(%arg0, %cst_1 : tensor<8x16xf32>, tensor<16x16xf32>) outs(%1 : tensor<8x16xf32>) -> tensor<8x16xf32>
-    %4 = linalg.matmul ins(%arg0, %cst_0 : tensor<8x16xf32>, tensor<16x16xf32>) outs(%1 : tensor<8x16xf32>) -> tensor<8x16xf32>
-    %5 = tensor.empty() : tensor<16x8xf32>
-    %transposed = linalg.transpose ins(%3 : tensor<8x16xf32>) outs(%5 : tensor<16x8xf32>) permutation = [1, 0] 
-    %6 = tensor.empty() : tensor<8x8xf32>
-    %7 = linalg.fill ins(%cst : f32) outs(%6 : tensor<8x8xf32>) -> tensor<8x8xf32>
-    %8 = linalg.matmul ins(%2, %transposed : tensor<8x16xf32>, tensor<16x8xf32>) outs(%7 : tensor<8x8xf32>) -> tensor<8x8xf32>
-    %9 = linalg.generic {indexing_maps = [#map, #map], iterator_types = ["parallel", "parallel"]} ins(%8 : tensor<8x8xf32>) outs(%6 : tensor<8x8xf32>) {
+    %0 = tensor.empty() : tensor<7x16xf32>
+    %1 = linalg.fill ins(%cst : f32) outs(%0 : tensor<7x16xf32>) -> tensor<7x16xf32>
+    %2 = linalg.matmul ins(%arg0, %cst_2 : tensor<7x16xf32>, tensor<16x16xf32>) outs(%1 : tensor<7x16xf32>) -> tensor<7x16xf32>
+    %3 = linalg.matmul ins(%arg0, %cst_1 : tensor<7x16xf32>, tensor<16x16xf32>) outs(%1 : tensor<7x16xf32>) -> tensor<7x16xf32>
+    %4 = linalg.matmul ins(%arg0, %cst_0 : tensor<7x16xf32>, tensor<16x16xf32>) outs(%1 : tensor<7x16xf32>) -> tensor<7x16xf32>
+    %5 = tensor.empty() : tensor<16x7xf32>
+    %transposed = linalg.transpose ins(%3 : tensor<7x16xf32>) outs(%5 : tensor<16x7xf32>) permutation = [1, 0] 
+    %6 = tensor.empty() : tensor<7x7xf32>
+    %7 = linalg.fill ins(%cst : f32) outs(%6 : tensor<7x7xf32>) -> tensor<7x7xf32>
+    %8 = linalg.matmul ins(%2, %transposed : tensor<7x16xf32>, tensor<16x7xf32>) outs(%7 : tensor<7x7xf32>) -> tensor<7x7xf32>
+    %9 = linalg.generic {indexing_maps = [#map, #map], iterator_types = ["parallel", "parallel"]} ins(%8 : tensor<7x7xf32>) outs(%6 : tensor<7x7xf32>) {
     ^bb0(%in: f32, %out: f32):
       %11 = arith.mulf %in, %cst_3 : f32
       linalg.yield %11 : f32
-    } -> tensor<8x8xf32>
-    %10 = linalg.matmul ins(%9, %4 : tensor<8x8xf32>, tensor<8x16xf32>) outs(%1 : tensor<8x16xf32>) -> tensor<8x16xf32>
-    return %10 : tensor<8x16xf32>
+    } -> tensor<7x7xf32>
+    %10 = linalg.matmul ins(%9, %4 : tensor<7x7xf32>, tensor<7x16xf32>) outs(%1 : tensor<7x16xf32>) -> tensor<7x16xf32>
+    return %10 : tensor<7x16xf32>
   }
 }
 
