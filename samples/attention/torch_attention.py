@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch_mlir import fx
 
+
 class AttentionNoSoftmax(nn.Module):
   def __init__(self, d_model, d_k):
     super().__init__()
@@ -61,12 +62,137 @@ class BatchedAttentionNoSoftmax(nn.Module):
     return output
 
 
+class TricycleAttentionNoSoftmax(nn.Module):
+  def __init__(
+    self,
+    d_model=16,
+    num_heads=3,
+    seq_len=7,
+    d_k_half=17,
+    pad_rows=4,
+  ):
+    super().__init__()
+
+    self.d_model = d_model
+    self.num_heads = num_heads
+    self.seq_len = seq_len
+    self.d_k_half = d_k_half
+    self.pad_rows = pad_rows
+
+    # (H, d_model, d_k/2)
+    self.Wq = nn.Parameter(
+      torch.randn(num_heads, d_model, d_k_half)
+    )
+    self.Wk = nn.Parameter(
+      torch.randn(num_heads, d_model, d_k_half)
+    )
+    self.Wv = nn.Parameter(
+      torch.randn(num_heads, d_model, d_k_half)
+    )
+
+    self.scale = 1.0 / math.sqrt(d_k_half)
+
+    #
+    # I' : (1, L+r, L)
+    #
+    # L = seq_len
+    # r = pad_rows
+
+    # I = torch.eye(L)
+    # I = torch.cat(
+    #   [I, torch.zeros(r, L)],
+    #   dim=0,
+    # )
+
+    # self.register_buffer(
+    #   "I_prime",
+    #   I.unsqueeze(0),
+    # )
+
+  def forward(self, x):
+    #
+    # x : (L, d_model)
+    #
+
+    #
+    # Broadcast input across heads
+    #
+    x = x.unsqueeze(0).expand(self.num_heads, -1, -1)
+    #
+    # (H, L, d_model)
+    #
+
+    #
+    # Broadcasted batch matrix multiplication
+    #
+    Q = torch.matmul(x, self.Wq)
+    K = torch.matmul(x, self.Wk)
+    V = torch.matmul(x, self.Wv)
+    #
+    # (H, L, d_k_half)
+    #
+
+    #
+    # Reshape K and V using the tall identity
+    #
+    L = self.seq_len
+    r = self.pad_rows
+
+    I = torch.eye(
+      L,
+      dtype=x.dtype,
+      device=x.device,
+    )
+
+    I = torch.cat(
+      [I, torch.zeros(r, L, dtype=x.dtype, device=x.device)],
+      dim=0,
+    )
+
+    I_prime = I.unsqueeze(0)
+    K = torch.matmul(I_prime, K)
+    V = torch.matmul(I_prime, V)
+    #
+    # (H, L+r, d_k_half)
+    #
+
+    #
+    # Attention scores
+    #
+    scores = torch.matmul(
+      Q,
+      K.transpose(-2, -1),
+    )
+    #
+    # (H, L, L+r)
+    #
+
+    scores = scores * self.scale
+
+    #
+    # Attention output
+    #
+    output = torch.matmul(scores, V)
+    #
+    # (H, L, d_k_half)
+    #
+
+    return output
+
+
 def main():
   torch.manual_seed(0)
 
-  model = BatchedAttentionNoSoftmax().eval()
+  model = TricycleAttentionNoSoftmax(
+    d_model=16,
+    num_heads=3,
+    seq_len=7,
+    d_k_half=17,
+    pad_rows=4,      # L+r = 11
+  ).eval()
 
-  x = torch.randn(3, 7, 16)
+  x = torch.randn(7, 16)
+
 
   module = fx.export_and_import(
     model,
@@ -74,13 +200,13 @@ def main():
     output_type="linalg-on-tensors",
   )
 
-  with open("attention_batch.mlir", "w") as f:
+  with open("samples/attention/attention_batch.mlir", "w") as f:
     f.write(str(module))
 
-  # with torch.no_grad():
-  #   y = model(x)
+  with torch.no_grad():
+    y = model(x)
 
-  # print(y)
+  print("Output shape:", y.shape)
 
 
 if __name__ == "__main__":
