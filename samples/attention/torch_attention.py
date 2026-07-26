@@ -29,6 +29,54 @@ class AttentionNoSoftmax(nn.Module):
     return output
 
 
+class SingleHeadAttentionNoSoftmax(nn.Module):
+  def __init__(
+    self,
+    seq_len=7,
+    d_model=16,
+    d_k=17,
+    pad_rows=4,
+  ):
+    super().__init__()
+    self.d_model = d_model
+    self.seq_len = seq_len
+    self.d_k= d_k
+    self.pad_rows = pad_rows
+
+    self.Wq = nn.Parameter(torch.randn(d_model, d_k))
+    self.Wk = nn.Parameter(torch.randn(d_model, d_k))
+    self.Wv = nn.Parameter(torch.randn(d_model, d_k))
+
+    self.scale = 1.0 / math.sqrt(d_k)
+
+
+  def forward(self, x):
+    # x : [L, d_model]
+
+    Q = torch.matmul(x, self.Wq)
+    K = torch.matmul(x, self.Wk)
+    V = torch.matmul(x, self.Wv)
+
+    # [L+r, d_k]
+    L = self.seq_len
+    r = self.pad_rows
+
+    I = torch.eye(L)
+    I_prime = torch.cat([I, torch.zeros(r, L)], dim=0)
+
+    K = torch.matmul(I_prime, K)
+    V = torch.matmul(I_prime, V)
+
+    # [L, L+r]
+    scores = torch.matmul(Q, K.transpose(0, 1))
+    scores = scores * self.scale
+
+    # [L, d_k]
+    output = torch.matmul(scores, V)
+
+    return output
+
+
 class BatchedAttentionNoSoftmax(nn.Module):
   def __init__(self, num_heads=3, seq_len=7, head_dim=16):
     super().__init__()
@@ -117,7 +165,7 @@ class TricycleAttentionNoSoftmax(nn.Module):
     #
     # Broadcast input across heads
     #
-    x = x.unsqueeze(0).expand(self.num_heads, -1, -1)
+    # x = x.unsqueeze(0).expand(self.num_heads, -1, -1) # HEIR doesn't support broadcasting 2D to 3D, so we use repeat instead
     #
     # (H, L, d_model)
     #
@@ -183,11 +231,10 @@ class TricycleAttentionNoSoftmax(nn.Module):
 def main():
   torch.manual_seed(0)
 
-  model = TricycleAttentionNoSoftmax(
+  model = SingleHeadAttentionNoSoftmax(
     d_model=16,
-    num_heads=3,
     seq_len=7,
-    d_k_half=17,
+    d_k=17,
     pad_rows=4,      # L+r = 11
   ).eval()
 
@@ -200,7 +247,7 @@ def main():
     output_type="linalg-on-tensors",
   )
 
-  with open("samples/attention/attention_batch.mlir", "w") as f:
+  with open("samples/attention/attention.mlir", "w") as f:
     f.write(str(module))
 
   with torch.no_grad():
