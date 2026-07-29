@@ -1,0 +1,3 @@
+add_library(fhe_bert_attention bert_attention.cpp)
+
+target_link_libraries(fhe_bert_attention PRIVATE cheddar)

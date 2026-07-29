@@ -43,8 +43,19 @@ target_link_libraries(
   nlohmann_json::nlohmann_json
   alexnet_tiny
 )
-
 target_compile_definitions(alexnet_tiny_tests PRIVATE
+  TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+
+add_executable(bert_attention_tests bert_attention_tests.cpp)
+target_link_libraries(
+  bert_attention_tests
+  PRIVATE
+  GTest::gtest_main
+  cheddar
+  nlohmann_json::nlohmann_json
+  fhe_bert_attention
+)
+target_compile_definitions(bert_attention_tests PRIVATE
   TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 add_executable(alexnet_tiny_profile alexnet-tiny_profile.cpp)
