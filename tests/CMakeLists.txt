@@ -13,7 +13,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(jsoncpp)
 
-enable_testing()
 
 add_executable(sumf_test sumf_test.cpp)
 target_link_libraries(
@@ -58,4 +57,4 @@ target_link_libraries(
 )
 
 include(GoogleTest)
-gtest_discover_tests(sumf_test matvec_8x8_tests)
+gtest_discover_tests(sumf_test matvec_8x8_tests alexnet_tiny_tests)

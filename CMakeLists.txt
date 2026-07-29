@@ -12,4 +12,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(thirdparty/libtommath)
 add_subdirectory(thirdparty/cheddar-fhe)
 add_subdirectory(samples)
+
+enable_testing()
 add_subdirectory(tests)
