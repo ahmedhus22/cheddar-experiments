@@ -54,27 +54,28 @@ std::vector<double> loadBinaryInput(const std::filesystem::path& relativePath,
     throw std::runtime_error("Failed to open file: " + filePath.string());
   }
 
-  std::vector<float> temp(numElements);
+  std::vector<double> temp(numElements);
   in.read(reinterpret_cast<char*>(temp.data()),
-          temp.size() * sizeof(float));
+          temp.size() * sizeof(double));
 
   if (in.gcount() !=
-      static_cast<std::streamsize>(temp.size() * sizeof(float))) {
+      static_cast<std::streamsize>(temp.size() * sizeof(double))) {
     throw std::runtime_error("Failed to read expected number of bytes from: " +
                              filePath.string());
   }
 
   // Uncomment the following lines for debugging purposes
-  // for (size_t i = 0; i < std::min<size_t>(10, temp.size()); ++i)
-  //   std::cout << temp[i] << '\n';
+  std::cout << filePath.string() << " loaded successfully. First few values:\n";
+  for (size_t i = 0; i < std::min<size_t>(10, temp.size()); ++i)
+    std::cout << temp[i] << '\n';
 
-  // for (double x : temp) {
-  //   if (!std::isfinite(x))
-  //     std::cout << "Non-finite value found\n";
-  // }
+  for (double x : temp) {
+    if (!std::isfinite(x))
+      std::cout << "Non-finite value found\n";
+  }
 
-  // auto [mn, mx] = std::minmax_element(temp.begin(), temp.end());
-  // std::cout << "min = " << *mn << ", max = " << *mx << '\n';
+  auto [mn, mx] = std::minmax_element(temp.begin(), temp.end());
+  std::cout << "min = " << *mn << ", max = " << *mx << '\n';
 
   return std::vector<double>(temp.begin(), temp.end());
 }
@@ -100,13 +101,13 @@ TEST(CheddarSamples, BertAttentionFull) {
   std::vector<double> result = bert_attention__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
 
   std::filesystem::path outPath =
-    std::filesystem::path("bert_attention/results/result.npz");
+    std::filesystem::path("bert_attention/results/result.bin");
   std::vector<double> actual_result = loadBinaryInput(outPath, 4096);
 
   
-  // Compare the result with pytorch implementation
+  // Compare the result with Rotoms testdata
   for (size_t i = 0; i < result.size(); ++i) {
-    EXPECT_NEAR(result[i], actual_result[i], 1e-3);
+    EXPECT_NEAR(result[i], actual_result[i], 1e-4);
   }
   EXPECT_EQ(result.size(), actual_result.size());
 }
