@@ -58,6 +58,21 @@ target_link_libraries(
 target_compile_definitions(bert_attention_tests PRIVATE
   TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
+add_executable(openfhe_bert_tests bert_attention_openfhe.cpp)
+target_link_libraries(
+  openfhe_bert_tests
+  PRIVATE
+  GTest::gtest_main
+  nlohmann_json::nlohmann_json
+  openfhe_bert
+)
+get_target_property(LINK_OPTS openfhe_interface INTERFACE_LINK_OPTIONS)
+message(STATUS "openfhe_interface link options: '${LINK_OPTS}'")
+get_target_property(LINK_LIBS openfhe_interface INTERFACE_LINK_LIBRARIES)
+message(STATUS "openfhe_interface link libs: '${LINK_LIBS}'")
+target_compile_definitions(openfhe_bert_tests PRIVATE
+  TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+
 add_executable(alexnet_tiny_profile alexnet-tiny_profile.cpp)
 target_link_libraries(
   alexnet_tiny_profile

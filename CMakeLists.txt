@@ -13,7 +13,65 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_PREFIX_PATH "$HOME/local/openfhe")
 
 add_subdirectory(thirdparty/libtommath)
+set(BUILD_UNITTEST 0)
 add_subdirectory(thirdparty/cheddar-fhe)
+option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
+
+find_package(OpenFHE CONFIG REQUIRED)
+
+if(OpenFHE_FOUND)
+  message(STATUS "FOUND PACKAGE OpenFHE")
+  message(STATUS "OpenFHE Version: ${BASE_OPENFHE_VERSION}")
+else()
+  message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
+endif()
+
+
+# Create an interface target
+add_library(openfhe_interface INTERFACE)
+
+target_compile_options(openfhe_interface INTERFACE
+  -Wno-error=sign-compare
+)
+
+target_include_directories(openfhe_interface INTERFACE
+  ${OPENMP_INCLUDES}
+  ${OpenFHE_INCLUDE}
+  ${OpenFHE_INCLUDE}/third-party/include
+  ${OpenFHE_INCLUDE}/core
+  ${OpenFHE_INCLUDE}/pke
+  ${OpenFHE_INCLUDE}/binfhe
+)
+
+if(UNIX AND NOT APPLE)
+  target_link_options(openfhe_interface INTERFACE
+    -Wl,--no-as-needed
+  )
+endif()
+
+
+if(BUILD_STATIC)
+  target_link_options(openfhe_interface INTERFACE
+    ${OpenFHE_EXE_LINKER_FLAGS}
+    -static
+  )
+
+  target_link_libraries(openfhe_interface INTERFACE
+    ${OpenFHE_STATIC_LIBRARIES}
+  )
+else()
+  if(OpenFHE_EXE_LINKER_FLAGS AND
+   NOT OpenFHE_EXE_LINKER_FLAGS STREQUAL " ")
+    target_link_options(openfhe_interface INTERFACE
+      ${OpenFHE_EXE_LINKER_FLAGS}
+    )
+  endif()
+
+  target_link_libraries(openfhe_interface INTERFACE
+    ${OpenFHE_SHARED_LIBRARIES}
+  )
+endif()
+
 add_subdirectory(samples)
 
 enable_testing()
