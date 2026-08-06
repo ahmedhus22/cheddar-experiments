@@ -35,42 +35,7 @@ std::vector<float> bert_attention__decrypt__result0(CryptoContextT cc, std::vect
 CryptoContextT bert_attention__generate_crypto_context();
 CryptoContextT bert_attention__configure_crypto_context(CryptoContextT cc, PrivateKeyT sk);
 
-
-std::vector<float> loadBinaryInput(const std::filesystem::path& relativePath,
-                                    std::size_t numElements) {
-  std::filesystem::path filePath =
-      std::filesystem::path(TEST_DATA_DIR) / relativePath;
-
-  std::ifstream in(filePath, std::ios::binary);
-  if (!in) {
-    throw std::runtime_error("Failed to open file: " + filePath.string());
-  }
-
-  std::vector<double> temp(numElements);
-  in.read(reinterpret_cast<char*>(temp.data()),
-          temp.size() * sizeof(double));
-
-  if (in.gcount() !=
-      static_cast<std::streamsize>(temp.size() * sizeof(double))) {
-    throw std::runtime_error("Failed to read expected number of bytes from: " +
-                             filePath.string());
-  }
-
-  // Uncomment the following lines for debugging purposes
-  std::cout << filePath.string() << " loaded successfully. First few values:\n";
-  for (size_t i = 0; i < std::min<size_t>(10, temp.size()); ++i)
-    std::cout << temp[i] << '\n';
-
-  for (double x : temp) {
-    if (!std::isfinite(x))
-      std::cout << "Non-finite value found\n";
-  }
-
-  auto [mn, mx] = std::minmax_element(temp.begin(), temp.end());
-  std::cout << "min = " << *mn << ", max = " << *mx << '\n';
-
-  return std::vector<float>(temp.begin(), temp.end());
-}
+#include "load_rotom_bin.h"
 
 int main(int argc, char** argv) {
   auto t0 = Clock::now();
@@ -93,9 +58,9 @@ int main(int argc, char** argv) {
     std::filesystem::path("bert_attention/inputs/5.bin");
   std::filesystem::path Path239 =
     std::filesystem::path("bert_attention/inputs/239.bin");
-  std::vector<float> in_3 = loadBinaryInput(Path3, 4096);
-  std::vector<float> in_5 = loadBinaryInput(Path5, 64 * 4096);
-  std::vector<float> in_239 = loadBinaryInput(Path239, 64 * 4096);
+  std::vector<float> in_3 = loadBinaryInput_f(Path3, 4096);
+  std::vector<float> in_5 = loadBinaryInput_f(Path5, 64 * 4096);
+  std::vector<float> in_239 = loadBinaryInput_f(Path239, 64 * 4096);
 
   auto t4 = Clock::now();
   auto encrypted_input =
@@ -123,7 +88,7 @@ int main(int argc, char** argv) {
   std::cout << "Encryption         : " << ms(t4, t5) << " ms\n";
   std::cout << "Homomorphic eval   : " << ms(t5, t6) << " ms\n";
   std::cout << "Decryption         : " << ms(t6, t7) << " ms\n";
-  std::cout << "Total              : " << ms(t0, t7) << " ms\n";
+  std::cout << "End-to-end         : " << ms(t0, t7) << " ms\n";
 
   std::cout << "Calculating average evaluation time over multiple iterations...\n";
   const int iterations = 20;
