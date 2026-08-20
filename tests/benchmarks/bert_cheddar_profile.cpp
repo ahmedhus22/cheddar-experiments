@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <cuda_runtime.h>
+#include <nvtx3/nvToolsExt.h>
 
 using Clock = std::chrono::high_resolution_clock;
 
@@ -66,18 +67,24 @@ int main(int argc, char** argv) {
   std::vector<double> in_5 = loadBinaryInput_d(Path5, 64 * 4096);
   std::vector<double> in_239 = loadBinaryInput_d(Path239, 64 * 4096);
 
+  nvtxRangePushA("Encryption");
   auto t2 = Clock::now();
   auto encrypted_input = bert_attention__encrypt__arg0(ctx, ctx->encoder_, ui, in_3, ui);
   cudaDeviceSynchronize();
   auto t3 = Clock::now();
+  nvtxRangePop();
 
+  nvtxRangePushA("Evaluation");
   auto encrypted_result = bert_attention(ctx, ctx->encoder_, ui, encrypted_input, in_5, in_239);
   cudaDeviceSynchronize();
   auto t4 = Clock::now();
+  nvtxRangePop();
 
+  nvtxRangePushA("Decryption");
   std::vector<double> result = bert_attention__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
   cudaDeviceSynchronize();
   auto t5 = Clock::now();
+  nvtxRangePop();
 
   std::cout << "Configuration      : " << ms(t0, t1) << " ms\n";
   std::cout << "Encryption         : " << ms(t2, t3) << " ms\n";
