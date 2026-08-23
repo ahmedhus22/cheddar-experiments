@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import ast
 import re
 from pathlib import Path
@@ -72,8 +73,13 @@ class AlexNetTiny(nn.Module):
 
 
 if __name__ == "__main__":
+  parser = ArgumentParser()
+  # Add an argument for the input MLIR file, within the "MLIR/" directory.
+  parser.add_argument("--input", type=Path, default=Path("alexnet") / "alexnet-tiny-n4096.mlir")
+  args = parser.parse_args()
+
   model = AlexNetTiny()
-  alexnet_tiny_path = Path(__file__).parent / "alexnet-tiny.mlir"
+  alexnet_tiny_path = Path(__file__).parent / "MLIR" / args.input
   with open(alexnet_tiny_path) as f:
     mlir = f.read()
 
@@ -117,7 +123,7 @@ if __name__ == "__main__":
   print(y)
 
   # write raw floats for C++
-  testdata_dir = Path(__file__).parents[2] / "tests" / "testdata"
+  testdata_dir = Path(__file__).parents[2] / "tests" / "testdata" / args.input.stem
   testdata_dir.mkdir(exist_ok=True)
 
   x = x.double()  # convert to double for C++ test

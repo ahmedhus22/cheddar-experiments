@@ -57,6 +57,7 @@ compile_commands.json
 *.log
 *.bak
 *.swp
+temp/
 
 # vcpkg
 vcpkg_installed/
@@ -77,3 +78,8 @@ mlir_venv
 
 # Pytorch model files
 *.pt
+
+# Profiling files
+*.nsys-rep
+*.sqlite
+*.csv
