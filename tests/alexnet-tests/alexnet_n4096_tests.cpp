@@ -5,6 +5,7 @@
 #include <complex>
 #include <cstdlib>
 #include <cstdint>
+#include <cstdio>
 #include <iostream>
 #include <memory>
 #include <tuple>
@@ -12,6 +13,8 @@
 #include <vector>
 #include <fstream>
 #include <filesystem>
+
+#include <cuda_runtime.h>
 
 
 #include "core/Context.h"
@@ -42,6 +45,18 @@ void alexnet_tiny__decrypt__result0(Context<word>* v1, const Encoder<word>& v2, 
 void alexnet_tiny__configure(std::shared_ptr<Context<word>>& v1, std::unique_ptr<UserInterface<word>>& v2);
 
 TEST(AlexnetTiny, AlexNetN4096) {
+  int n = -1;
+  cudaError_t err = cudaGetDeviceCount(&n);
+
+  printf("CUDA error: %s\n", cudaGetErrorString(err));
+  printf("CUDA devices: %d\n", n);
+
+  for (int i = 0; i < n; ++i) {
+      cudaDeviceProp prop;
+      cudaGetDeviceProperties(&prop, i);
+      printf("logical %d: %s\n", i, prop.name);
+  }
+
   std::shared_ptr<Context<word>> ctx;
   std::unique_ptr<UserInterface<word>> ui;
   alexnet_tiny__configure(ctx, ui);
