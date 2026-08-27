@@ -31,7 +31,7 @@
   using Enc = Encoder<word>;
   using Complex = std::complex<double>;
 
-std::vector<double> _assign_layout_8152158531564233307() {
+std::vector<double> _assign_layout_9254369819656219409() {
   int64_t v0 = 0;
   int32_t v1 = 16;
   int32_t v2 = 6;
@@ -63,7 +63,7 @@ std::vector<double> _assign_layout_8152158531564233307() {
   return v8;
 }
 
-std::vector<double> _assign_layout_10277840740017466658() {
+std::vector<double> _assign_layout_12543179041311907086() {
   int32_t v0 = 63;
   int32_t v1 = 4090;
   int32_t v2 = 64;
@@ -111,7 +111,7 @@ std::vector<double> _assign_layout_10277840740017466658() {
   return v11;
 }
 
-std::vector<double> _assign_layout_3553678930139953546() {
+std::vector<double> _assign_layout_15774549800887491906() {
   int64_t v0 = 0;
   int32_t v1 = 64;
   std::vector<double> v2(4096, 0);
@@ -133,7 +133,7 @@ std::vector<double> _assign_layout_3553678930139953546() {
   return v7;
 }
 
-std::vector<double> _assign_layout_10818230866218923947() {
+std::vector<double> _assign_layout_2987080153255886686() {
   int32_t v0 = 127;
   int32_t v1 = 4096;
   int32_t v2 = 128;
@@ -169,7 +169,7 @@ std::vector<double> _assign_layout_10818230866218923947() {
   return v9;
 }
 
-std::vector<double> _assign_layout_6269820139612148018() {
+std::vector<double> _assign_layout_12459545210859479361() {
   int64_t v0 = 0;
   int32_t v1 = 128;
   std::vector<double> v2(4096, 0);
@@ -191,7 +191,7 @@ std::vector<double> _assign_layout_6269820139612148018() {
   return v7;
 }
 
-std::vector<double> _assign_layout_3695224788083580451() {
+std::vector<double> _assign_layout_15330566658973488932() {
   int32_t v0 = 255;
   int32_t v1 = 4096;
   int32_t v2 = 256;
@@ -227,7 +227,7 @@ std::vector<double> _assign_layout_3695224788083580451() {
   return v9;
 }
 
-std::vector<double> _assign_layout_9984567020900405886() {
+std::vector<double> _assign_layout_45785681164274321() {
   int64_t v0 = 0;
   int32_t v1 = 256;
   std::vector<double> v2(4096, 0);
@@ -249,7 +249,7 @@ std::vector<double> _assign_layout_9984567020900405886() {
   return v7;
 }
 
-std::vector<double> _assign_layout_133402733056194446() {
+std::vector<double> _assign_layout_6974546642647228150() {
   int32_t v0 = 767;
   int32_t v1 = 4096;
   int32_t v2 = 4863;
@@ -338,14 +338,14 @@ std::vector<Ct> alexnet_tiny(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector
   int64_t v40 = 2;
   int64_t v41 = 1;
   int64_t v42 = 0;
-  std::vector<double> v43 = _assign_layout_133402733056194446();
-  std::vector<double> v44 = _assign_layout_9984567020900405886();
-  std::vector<double> v45 = _assign_layout_3695224788083580451();
-  std::vector<double> v46 = _assign_layout_6269820139612148018();
-  std::vector<double> v47 = _assign_layout_10818230866218923947();
-  std::vector<double> v48 = _assign_layout_3553678930139953546();
-  std::vector<double> v49 = _assign_layout_10277840740017466658();
-  std::vector<double> v50 = _assign_layout_8152158531564233307();
+  std::vector<double> v43 = _assign_layout_6974546642647228150();
+  std::vector<double> v44 = _assign_layout_45785681164274321();
+  std::vector<double> v45 = _assign_layout_15330566658973488932();
+  std::vector<double> v46 = _assign_layout_12459545210859479361();
+  std::vector<double> v47 = _assign_layout_2987080153255886686();
+  std::vector<double> v48 = _assign_layout_15774549800887491906();
+  std::vector<double> v49 = _assign_layout_12543179041311907086();
+  std::vector<double> v50 = _assign_layout_9254369819656219409();
   std::vector<double> v51(v45.begin() + 12 * 4096 + 0, v45.begin() + 12 * 4096 + 0 + 4084);
   std::vector<double> v52(v45.begin() + 12 * 4096 + 4084, v45.begin() + 12 * 4096 + 4084 + 12);
   std::vector<double> v53(4096);
@@ -10225,15 +10225,15 @@ std::vector<double> alexnet_tiny__decrypt__result0(CtxPtr ctx, Enc& encoder, UI&
 }
 
 std::tuple<CtxPtr, UI> __configure() {
-  static std::vector<word> main_primes = {536813569ULL, 536690689ULL, 536641537ULL, 536616961ULL, 536608769ULL, 536543233ULL, 536494081ULL, 536338433ULL, 536322049ULL};
-  static std::vector<word> aux_primes = {2147377153ULL, 2147352577ULL, 2147295233ULL, 2147205121ULL};
+  static std::vector<word> main_primes = {36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL};
+  static std::vector<word> aux_primes = {1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL};
   static std::vector<std::pair<int, int>> level_config = []() {
     std::vector<std::pair<int, int>> lc;
     for (int i = 1; i <= static_cast<int>(main_primes.size()); ++i)
       lc.push_back({i, 0});
     return lc;
   }();
-  static Param param(12, static_cast<double>(1ULL << 58), static_cast<int>(main_primes.size()) - 1, level_config, main_primes, aux_primes);
+  static Param param(15, static_cast<double>(1ULL << 45), static_cast<int>(main_primes.size()) - 1, level_config, main_primes, aux_primes);
   auto ctx = Context<word>::Create(param);
   UI ui(ctx);
   ui.PrepareRotationKey(1, static_cast<int>(main_primes.size()) - 1);
