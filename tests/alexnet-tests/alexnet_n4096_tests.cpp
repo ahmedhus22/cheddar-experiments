@@ -41,13 +41,12 @@ std::vector<Ct> alexnet_tiny__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, co
 std::vector<double> alexnet_tiny__decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1);
 std::tuple<CtxPtr, UI> __configure();
 
-TEST(AlexnetTiny, AlexNetN4096) {
+void run_alexnet(std::vector<double> &test_input, std::vector<double> &result, std::vector<double> &torch_output) {
   auto[ctx, ui] = __configure();
 
   std::filesystem::path inPath =
     std::filesystem::path(TEST_DATA_DIR) / "input.bin";
   std::ifstream in(inPath, std::ios::binary);
-  std::vector<double> test_input(1 * 3 * 16 * 16);
   in.read(reinterpret_cast<char*>(test_input.data()), test_input.size() * sizeof(double));
 
   // encrypt input
@@ -55,17 +54,30 @@ TEST(AlexnetTiny, AlexNetN4096) {
   // alexnet_tiny on encrypted input
   auto encrypted_result = alexnet_tiny(ctx, ctx->encoder_, ui, encrypted_input);
   // decrypt result
-  std::vector<double> result = alexnet_tiny__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
+  result = alexnet_tiny__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
 
   std::filesystem::path torchPath =
     std::filesystem::path(TEST_DATA_DIR) / "torch_output.bin";
   std::ifstream torch_in(torchPath, std::ios::binary);
-  std::vector<double> torch_output(1 * 10);
   torch_in.read(reinterpret_cast<char*>(torch_output.data()), torch_output.size() * sizeof(double));
+}
 
+std::vector<double> test_input(1 * 3 * 16 * 16);
+std::vector<double> result(1 * 10);
+std::vector<double> torch_output(1 * 10);
+
+TEST(AlexnetTiny, AlexNetN4096) {
+  run_alexnet(test_input, result, torch_output);
   // Compare the result with pytorch implementation
+  bool has_nonzero = false;
   for (size_t i = 0; i < result.size(); ++i) {
     EXPECT_NEAR(result[i], torch_output[i], 1e-6);
+    std::cout << "result[" << i << "] = " << result[i] << ", torch_output[" << i << "] = " << torch_output[i] << std::endl;
+    EXPECT_TRUE(std::isfinite(result[i])) << "result[" << i << "] is not finite";
+    if (result[i] != 0.0) {
+      has_nonzero = true;
+    }
   }
+  EXPECT_TRUE(has_nonzero) << "All elements in the result are zero";
   EXPECT_EQ(result.size(), torch_output.size());
 }
