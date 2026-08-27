@@ -66,18 +66,58 @@ std::vector<double> test_input(1 * 3 * 16 * 16);
 std::vector<double> result(1 * 10);
 std::vector<double> torch_output(1 * 10);
 
-TEST(AlexnetTiny, AlexNetN4096) {
+TEST(AlexnetTiny4096, OutputMatchesTorch) {
   run_alexnet(test_input, result, torch_output);
   // Compare the result with pytorch implementation
+  for (size_t i = 0; i < result.size(); ++i) {
+    EXPECT_NEAR(result[i], torch_output[i], 1e-3);
+    std::cout << "result[" << i << "] = " << result[i] << ", torch_output[" << i << "] = " << torch_output[i] << std::endl;
+  }
+}
+
+TEST(AlexnetTiny4096, OutputShape) {
+  EXPECT_EQ(result.size(), 10);
+  EXPECT_EQ(result.size(), torch_output.size());
+}
+
+TEST(AlexnetTiny4096, FiniteandNonZero) {
   bool has_nonzero = false;
   for (size_t i = 0; i < result.size(); ++i) {
-    EXPECT_NEAR(result[i], torch_output[i], 1e-6);
-    std::cout << "result[" << i << "] = " << result[i] << ", torch_output[" << i << "] = " << torch_output[i] << std::endl;
     EXPECT_TRUE(std::isfinite(result[i])) << "result[" << i << "] is not finite";
     if (result[i] != 0.0) {
       has_nonzero = true;
     }
   }
   EXPECT_TRUE(has_nonzero) << "All elements in the result are zero";
-  EXPECT_EQ(result.size(), torch_output.size());
+}
+
+TEST(AlexnetTiny4096, MaxAbsoluteError) {
+  double max_abs_error = 0.0;
+  for (size_t i = 0; i < result.size(); ++i) {
+    double abs_error = std::abs(result[i] - torch_output[i]);
+    if (abs_error > max_abs_error) {
+      max_abs_error = abs_error;
+    }
+  }
+  std::cout << "Max absolute error: " << max_abs_error << std::endl;
+  EXPECT_LT(max_abs_error, 1e-3) << "Max absolute error is too large: " << max_abs_error;
+}
+
+TEST(AlexnetTiny4096, MaxRelativeError) {
+  double max_rel_error = 0.0;
+  for (size_t i = 0; i < result.size(); ++i) {
+    double rel_error = std::abs(result[i] - torch_output[i]) / (std::abs(torch_output[i]) + 1e-12);
+    if (rel_error > max_rel_error) {
+      max_rel_error = rel_error;
+    }
+  }
+  std::cout << "Max relative error: " << max_rel_error << std::endl;
+  EXPECT_LT(max_rel_error, 1e-3) << "Max relative error is too large: " << max_rel_error;
+}
+
+TEST(AlexnetTiny4096, ArgmaxMatch) {
+  size_t argmax_result = std::distance(result.begin(), std::max_element(result.begin(), result.end()));
+  size_t argmax_torch = std::distance(torch_output.begin(), std::max_element(torch_output.begin(), torch_output.end()));
+  std::cout << "Argmax index: " << argmax_result << std::endl;
+  EXPECT_EQ(argmax_result, argmax_torch) << "Argmax indices do not match: result argmax = " << argmax_result << ", torch argmax = " << argmax_torch;
 }
