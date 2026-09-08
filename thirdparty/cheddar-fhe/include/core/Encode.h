@@ -47,6 +47,13 @@ class Encoder {
   Encoder(const Parameter<word> &param, const NTTHandler<word> &ntt_handler);
 
   /**
+   * @brief Canonical CKKS encode scale at the given level. Added for HEIR's
+   * cheddar backend: cheddar.encode emits encoder.GetScale(level) so plaintexts
+   * are encoded at the parameter set's exact per-level scale.
+   */
+  double GetScale(int level) const { return param_.GetScale(level); }
+
+  /**
    * @brief Encode a message into a plaintext for a given level and scale.
    * The message will be padded to the nearest power of 2.
    *
