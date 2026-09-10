@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdint>
 #include <fstream>
+#include <filesystem>
 #include <iostream>
 #include <iomanip>
 #include <iterator>
@@ -92,8 +93,8 @@ static void sync_cuda() {
 }
 
 
-// void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& ctx,
-//                       std::unique_ptr<UI>& ui);
+void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& ctx,
+                      std::unique_ptr<UI>& ui);
 void alexnet_tiny__encrypt__arg0(cheddar::Context<word>* ctx,
                           const cheddar::Encoder<word>& encoder, const Evk& evk,
                           float* input, UI* ui, std::array<Ct, 1>& out);
@@ -109,35 +110,35 @@ void alexnet_tiny__decrypt__result0(cheddar::Context<word>* ctx,
                              UI* ui, float* out);
 
 
-void alexnet_tiny__setup(std::shared_ptr<cheddar::Context<word>>& v1) {
-  static cheddar::Parameter<word> cheddar_param(15, static_cast<double>(static_cast<word>(1) << 45), 7, std::vector<std::pair<int, int>>{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}, std::vector<word>{36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL}, std::vector<word>{1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL});
-  v1 = cheddar::Context<word>::Create(cheddar_param);
-  return;
-}
-void alexnet_tiny__keygen(const std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2) {
-  v2 = std::make_unique<cheddar::UserInterface<word>>(v1);
-  v2->PrepareRotationKey(1, 7);
-  v2->PrepareRotationKey(8, 7);
-  v2->PrepareRotationKey(16, 7);
-  v2->PrepareRotationKey(22, 7);
-  v2->PrepareRotationKey(32, 7);
-  v2->PrepareRotationKey(64, 7);
-  v2->PrepareRotationKey(128, 7);
-  v2->PrepareRotationKey(256, 7);
-  v2->PrepareRotationKey(512, 7);
-  return;
-}
-void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2) {
-  bool v3 = true;
-  std::shared_ptr<cheddar::Context<word>> v4;
-  alexnet_tiny__setup(v4);
-  alexnet_tiny__keygen(v4, v2);
-  v1 = v4;
-  if (v3) {
-    v4 = std::shared_ptr<cheddar::Context<word>>();
-  }
-  return;
-}
+// void alexnet_tiny__setup(std::shared_ptr<cheddar::Context<word>>& v1) {
+//   static cheddar::Parameter<word> cheddar_param(15, static_cast<double>(static_cast<word>(1) << 45), 7, std::vector<std::pair<int, int>>{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}, std::vector<word>{36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL}, std::vector<word>{1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL});
+//   v1 = cheddar::Context<word>::Create(cheddar_param);
+//   return;
+// }
+// void alexnet_tiny__keygen(const std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2) {
+//   v2 = std::make_unique<cheddar::UserInterface<word>>(v1);
+//   v2->PrepareRotationKey(1, 7);
+//   v2->PrepareRotationKey(8, 7);
+//   v2->PrepareRotationKey(16, 7);
+//   v2->PrepareRotationKey(22, 7);
+//   v2->PrepareRotationKey(32, 7);
+//   v2->PrepareRotationKey(64, 7);
+//   v2->PrepareRotationKey(128, 7);
+//   v2->PrepareRotationKey(256, 7);
+//   v2->PrepareRotationKey(512, 7);
+//   return;
+// }
+// void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2) {
+//   bool v3 = true;
+//   std::shared_ptr<cheddar::Context<word>> v4;
+//   alexnet_tiny__setup(v4);
+//   alexnet_tiny__keygen(v4, v2);
+//   v1 = v4;
+//   if (v3) {
+//     v4 = std::shared_ptr<cheddar::Context<word>>();
+//   }
+//   return;
+// }
 
 TimingStats context_generation;
 TimingStats key_generation;
@@ -216,56 +217,217 @@ TEST(AlexnetTiny4096Profile, Configuration) {
   }
 }
 
-// int main(int argc, char** argv) {
-//   std::shared_ptr<cheddar::Context<word>> ctx;
-//   std::unique_ptr<UI> ui;
-//   alexnet_tiny__configure(ctx, ui);
-//   ASSERT_NE(ctx, nullptr);
-//   ASSERT_NE(ui, nullptr);
-//   const Evk& evk = ui->GetMultiplicationKey();
-//   const EvkMap& evk_map = ui->GetEvkMap();
-  
-//   std::vector<float> test_input(1 * 3 * 16 * 16);
-//   std::generate(test_input.begin(), test_input.end(), 
-//     []() { return static_cast<float>(rand()) / RAND_MAX; });
+TimingStats encryption_stats;
+TimingStats preprocessing_stats;
+TimingStats evaluation_stats;
+TimingStats decryption_stats;
+TimingStats online_total_stats;
+
+TEST(AlexnetTiny4096Profile, Inference) {
+  std::shared_ptr<cheddar::Context<word>> ctx;
+  std::unique_ptr<UI> ui;
+  alexnet_tiny__configure(ctx, ui);
+
+  ASSERT_NE(ctx, nullptr);
+  ASSERT_NE(ui, nullptr);
+
+  const Evk& evk = ui->GetMultiplicationKey();
+  const EvkMap& evk_map = ui->GetEvkMap();
+
+  std::vector<double> test_input(1 * 3 * 16 * 16);
+
+  std::filesystem::path inPath =
+    std::filesystem::path(TEST_DATA_DIR) / "input.bin";
+  std::ifstream in(inPath, std::ios::binary);
+  in.read(reinterpret_cast<char*>(test_input.data()), test_input.size() * sizeof(double));
+  std::vector<float> test_input_float(test_input.begin(), test_input.end());
+
+  auto run_iteration = [&](bool record) -> double {
+    std::array<Ct, 1> encrypted;
+    std::array<Pt, 4> plaintexts;
+    std::array<std::shared_ptr<LinearTransform>, 4> transforms;
+    std::array<Ct, 1> evaluated;
+
+    float result[10];
+
+    double encryption_ms = 0.0;
+    double preprocessing_ms = 0.0;
+    double evaluation_ms = 0.0;
+    double decryption_ms = 0.0;
 
 
-//   std::array<Ct, 1> encrypted;
-//   alexnet_tiny__encrypt__arg0(ctx.get(), ctx->encoder_, evk, &test_input[0], ui.get(),
-//                        encrypted);
+    // ------------------------------------------------------------
+    // Encryption
+    // ------------------------------------------------------------
 
-//   std::array<Pt, 4> plaintexts;
-//   std::array<std::shared_ptr<LinearTransform>, 4> transforms;
-//   auto preprocessing_start = std::chrono::steady_clock::now();
-//   alexnet_tiny__preprocessing(ctx.get(), ctx->encoder_,  transforms, plaintexts);
-//   std::cerr << "HeirMLP preprocessing took "
-//             << std::chrono::duration<double>(std::chrono::steady_clock::now() -
-//                                              preprocessing_start)
-//                    .count()
-//             << " seconds\n";
-//   ASSERT_NE(transforms[0], nullptr);
-//   ASSERT_NE(transforms[1], nullptr);
+    nvtxRangePushA("Encryption");
+    sync_cuda();
+    auto start = Clock::now();
+    alexnet_tiny__encrypt__arg0(
+      ctx.get(),
+      ctx->encoder_,
+      evk,
+      test_input_float.data(),
+      ui.get(),
+      encrypted
+    );
 
-//   std::array<Ct, 1> evaluated;
-//   auto evaluation_start = std::chrono::steady_clock::now();
-//   alexnet_tiny__preprocessed(ctx.get(), ctx->encoder_,  evk, evk_map,
-//                       encrypted,
-//                       transforms, plaintexts, evaluated);
-//   std::cerr << "HeirMLP evaluation took "
-//             << std::chrono::duration<double>(std::chrono::steady_clock::now() -
-//                                              evaluation_start)
-//                    .count()
-//             << " seconds\n";
-//   EXPECT_EQ(ctx->param_.NPToLevel(encrypted[0].GetNP()), 6);
-//   EXPECT_EQ(ctx->param_.NPToLevel(evaluated[0].GetNP()), 0);
+    sync_cuda();
+    auto end = Clock::now();
+    encryption_ms = elapsed_ms(start, end);
+    nvtxRangePop();
 
-//   std::array<Ct, 1> evaluated_again;
-//   alexnet_tiny__preprocessed(ctx.get(), ctx->encoder_,  evk, evk_map,
-//                       encrypted,
-//                       transforms, plaintexts, evaluated_again);
 
-//   float result[10];
-//   alexnet_tiny__decrypt__result0(ctx.get(), ctx->encoder_, evk, evaluated, ui.get(),
-//                           &result[0]);
-  
-// }
+    // ------------------------------------------------------------
+    // Plaintext preprocessing
+    // ------------------------------------------------------------
+    nvtxRangePushA("Plaintext Preprocessing");
+    sync_cuda();
+    start = Clock::now();
+    alexnet_tiny__preprocessing(
+      ctx.get(),
+      ctx->encoder_,
+      transforms,
+      plaintexts
+    );
+
+    sync_cuda();
+    end = Clock::now();
+    preprocessing_ms = elapsed_ms(start, end);
+    nvtxRangePop();
+
+    // ASSERT_NE(transforms[0], nullptr);
+    // ASSERT_NE(transforms[1], nullptr);
+
+    // ------------------------------------------------------------
+    // Encrypted computation
+    // ------------------------------------------------------------
+    nvtxRangePushA("Encrypted Computation");
+    sync_cuda();
+    start = Clock::now();
+    alexnet_tiny__preprocessed(
+      ctx.get(),
+      ctx->encoder_,
+      evk,
+      evk_map,
+      encrypted,
+      transforms,
+      plaintexts,
+      evaluated
+    );
+
+    sync_cuda();
+    end = Clock::now();
+    evaluation_ms = elapsed_ms(start, end);
+    nvtxRangePop();
+
+
+    // ------------------------------------------------------------
+    // Decryption
+    // ------------------------------------------------------------
+    nvtxRangePushA("Decryption");
+    sync_cuda();
+    start = Clock::now();
+    alexnet_tiny__decrypt__result0(
+      ctx.get(),
+      ctx->encoder_,
+      evk,
+      evaluated,
+      ui.get(),
+      result
+    );
+    sync_cuda();
+    end = Clock::now();
+    decryption_ms = elapsed_ms(start, end);
+    nvtxRangePop();
+
+
+    // ------------------------------------------------------------
+    // Online total
+    // ------------------------------------------------------------
+    double online_ms =
+      encryption_ms +
+      preprocessing_ms +
+      evaluation_ms +
+      decryption_ms;
+
+
+    if (record) {
+      encryption_stats.add(encryption_ms);
+      preprocessing_stats.add(preprocessing_ms);
+      evaluation_stats.add(evaluation_ms);
+      decryption_stats.add(decryption_ms);
+      online_total_stats.add(online_ms);
+    }
+    return online_ms;
+  };
+
+  // ------------------------------------------------------------
+  // Warmup
+  // ------------------------------------------------------------
+  std::cerr << "Running warmup...\n";
+  for (int i = 0; i < kwarmups; ++i) {
+      double online_ms = run_iteration(false);
+      std::cerr
+          << "Warmup iteration " << (i + 1)
+          << " online total: "
+          << online_ms
+          << " ms\n";
+  }
+
+  // ------------------------------------------------------------
+  // Measured repetitions
+  // ------------------------------------------------------------
+  std::cerr << "Running measured repetitions...\n";
+  for (int i = 0; i < kiterations; ++i) {
+      double online_ms = run_iteration(true);
+      std::cerr
+          << "Iteration " << (i + 1)
+          << " online total: "
+          << online_ms
+          << " ms\n";
+  }
+
+}
+
+
+TEST(AlexnetTiny4096Profile, Report) {
+  auto print_stats = [](const char* name,
+                      const TimingStats& stats) {
+
+    std::cout << std::fixed << std::setprecision(3);
+
+    std::cout << "\n" << name << "\n";
+    std::cout << "  samples: ";
+
+    for (double x : stats.samples) {
+        std::cout << x << " ms ";
+    }
+
+    std::cout << "\n";
+    std::cout << "  median: " << stats.median() << " ms\n";
+    std::cout << "  min:    " << stats.min() << " ms\n";
+    std::cout << "  max:    " << stats.max() << " ms\n";
+    std::cout << "  stddev: " << stats.stddev() << " ms\n";
+  };
+
+  ASSERT_EQ(context_generation.samples.size(), kiterations);
+  ASSERT_EQ(key_generation.samples.size(), kiterations);
+  ASSERT_EQ(eval_key_generation.samples.size(), kiterations);
+  ASSERT_EQ(configuration.samples.size(), kiterations);
+  ASSERT_EQ(encryption_stats.samples.size(), kiterations);
+  ASSERT_EQ(preprocessing_stats.samples.size(), kiterations);
+  ASSERT_EQ(evaluation_stats.samples.size(), kiterations);
+  ASSERT_EQ(decryption_stats.samples.size(), kiterations);
+  ASSERT_EQ(online_total_stats.samples.size(), kiterations);
+
+  print_stats("Context Generation", context_generation);
+  print_stats("Key Generation", key_generation);
+  print_stats("Evaluation Key Generation", eval_key_generation);
+  print_stats("Configuration", configuration);
+  print_stats("Encryption", encryption_stats);
+  print_stats("Plaintext preprocessing", preprocessing_stats);
+  print_stats("Encrypted computation", evaluation_stats);
+  print_stats("Decryption", decryption_stats);
+  print_stats("Online total", online_total_stats);
+}

@@ -26,3 +26,8 @@ add_alexnet_test(
   alexnet_n4096_tests.cpp
   alexnet_n4096
 )
+add_alexnet_test(
+  alexnet_n4096_profile
+  alexnet_n4096_profile.cpp
+  alexnet_n4096
+)
