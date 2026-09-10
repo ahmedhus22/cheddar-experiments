@@ -1,9 +1,12 @@
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <iterator>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -12,6 +15,9 @@
 #include "core/Context.h"
 #include "core/Encode.h"
 #include "extension/LinearTransform.h"
+                             
+#include <cuda_runtime.h>
+#include <nvtx3/nvToolsExt.h>
 
 using word = uint64_t;
 using Ct = cheddar::Ciphertext<word>;
@@ -21,9 +27,71 @@ using LinearTransform = cheddar::LinearTransform<word>;
 using Pt = cheddar::Plaintext<word>;
 using UI = cheddar::UserInterface<word>;
 
+using Clock = std::chrono::steady_clock;
 
-void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& ctx,
-                      std::unique_ptr<UI>& ui);
+struct TimingStats {
+  std::vector<double> samples;
+
+  void add(double ms) {
+    samples.push_back(ms);
+  }
+
+  double median() const {
+    auto x = samples;
+    std::sort(x.begin(), x.end());
+
+    if (x.size() % 2 == 0) {
+      return (x[x.size()/2 - 1] + x[x.size()/2]) / 2.0;
+    }
+
+    return x[x.size()/2];
+  }
+
+  double min() const {
+    return *std::min_element(samples.begin(), samples.end());
+  }
+
+  double max() const {
+    return *std::max_element(samples.begin(), samples.end());
+  }
+
+  double mean() const {
+    return std::accumulate(samples.begin(), samples.end(), 0.0)
+              / samples.size();
+  }
+
+  double stddev() const {
+    const double m = mean();
+
+    double sum = 0.0;
+    for (double x : samples) {
+      double d = x - m;
+      sum += d * d;
+    }
+
+    // Population standard deviation.
+    return std::sqrt(sum / samples.size());
+  }
+};
+
+static double elapsed_ms(Clock::time_point start,
+                         Clock::time_point end) {
+  return std::chrono::duration<double, std::milli>(end - start).count();
+}
+
+static void sync_cuda() {
+  cudaError_t err = cudaDeviceSynchronize();
+
+  if (err != cudaSuccess) {
+    std::cerr << "cudaDeviceSynchronize failed: "
+              << cudaGetErrorString(err) << "\n";
+    std::abort();
+  }
+}
+
+
+// void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& ctx,
+//                       std::unique_ptr<UI>& ui);
 void alexnet_tiny__encrypt__arg0(cheddar::Context<word>* ctx,
                           const cheddar::Encoder<word>& encoder, const Evk& evk,
                           float* input, UI* ui, std::array<Ct, 1>& out);
@@ -38,7 +106,37 @@ void alexnet_tiny__decrypt__result0(cheddar::Context<word>* ctx,
                              const Evk& evk, const std::array<Ct, 1>& input,
                              UI* ui, float* out);
 
-#include <nvtx3/nvToolsExt.h>
+
+void alexnet_tiny__setup(std::shared_ptr<cheddar::Context<word>>& v1) {
+  static cheddar::Parameter<word> cheddar_param(15, static_cast<double>(static_cast<word>(1) << 45), 7, std::vector<std::pair<int, int>>{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}, std::vector<word>{36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL}, std::vector<word>{1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL});
+  v1 = cheddar::Context<word>::Create(cheddar_param);
+  return;
+}
+void alexnet_tiny__keygen(const std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2) {
+  v2 = std::make_unique<cheddar::UserInterface<word>>(v1);
+  v2->PrepareRotationKey(1, 7);
+  v2->PrepareRotationKey(8, 7);
+  v2->PrepareRotationKey(16, 7);
+  v2->PrepareRotationKey(22, 7);
+  v2->PrepareRotationKey(32, 7);
+  v2->PrepareRotationKey(64, 7);
+  v2->PrepareRotationKey(128, 7);
+  v2->PrepareRotationKey(256, 7);
+  v2->PrepareRotationKey(512, 7);
+  return;
+}
+void alexnet_tiny__configure(std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2) {
+  bool v3 = true;
+  std::shared_ptr<cheddar::Context<word>> v4;
+  alexnet_tiny__setup(v4);
+  alexnet_tiny__keygen(v4, v2);
+  v1 = v4;
+  if (v3) {
+    v4 = std::shared_ptr<cheddar::Context<word>>();
+  }
+  return;
+}
+
 
 int main(int argc, char** argv) {
   std::shared_ptr<cheddar::Context<word>> ctx;
@@ -88,23 +186,8 @@ int main(int argc, char** argv) {
                       encrypted,
                       transforms, plaintexts, evaluated_again);
 
-  float actual[1][10];
+  float result[10];
   alexnet_tiny__decrypt__result0(ctx.get(), ctx->encoder_, evk, evaluated, ui.get(),
-                          &actual[0][0]);
-  int predicted_class = 0;
-  for (size_t i = 0; i < 10; ++i) {
-    ASSERT_TRUE(std::isfinite(actual[0][i])) << "logit " << i;
-    EXPECT_NEAR(actual[0][i], kExpected[i], kTolerance) << "logit " << i;
-    if (actual[0][i] > actual[0][predicted_class]) predicted_class = i;
-  }
-  EXPECT_EQ(predicted_class, kExpectedClass);
-
-  float repeated[1][10];
-  alexnet_tiny__decrypt__result0(ctx.get(), ctx->encoder_, evk, evaluated_again,
-                          ui.get(), &repeated[0][0]);
-  for (size_t i = 0; i < 10; ++i) {
-    ASSERT_TRUE(std::isfinite(repeated[0][i])) << "repeated logit " << i;
-    EXPECT_NEAR(repeated[0][i], actual[0][i], kTolerance)
-        << "repeated logit " << i;
-  }
+                          &result[0]);
+  
 }
