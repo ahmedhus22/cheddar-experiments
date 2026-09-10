@@ -5,11 +5,8 @@
 #include <filesystem>
 #include <iostream>
 #include <iomanip>
-#include <iterator>
 #include <memory>
 #include <numeric>
-#include <stdexcept>
-#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -146,10 +143,10 @@ TimingStats eval_key_generation;
 TimingStats configuration;
 int kwarmups = 1;
 int kiterations = 3;
+double configuration_warmup_ms = 0.0;
 
 TEST(AlexnetTiny4096Profile, Configuration) {
   nvtxRangePushA("Configuration Warmup");
-  double configuration_warmup_ms = 0.0;
   for (int i=0; i < kwarmups; ++i) {
     sync_cuda();
     auto warmup_start = Clock::now();
@@ -160,6 +157,11 @@ TEST(AlexnetTiny4096Profile, Configuration) {
     auto warmup_end = Clock::now();
     configuration_warmup_ms =
         elapsed_ms(warmup_start, warmup_end);
+    std::cerr
+          << "Warmup iteration " << (i + 1)
+          << " configuration: "
+          << configuration_warmup_ms
+          << " ms\n";
     ASSERT_NE(ctx, nullptr);
     ASSERT_NE(ui, nullptr);
   }
@@ -358,6 +360,16 @@ TEST(AlexnetTiny4096Profile, Inference) {
       evaluation_stats.add(evaluation_ms);
       decryption_stats.add(decryption_ms);
       online_total_stats.add(online_ms);
+    } else {
+      std::filesystem::path torchPath =
+      std::filesystem::path(TEST_DATA_DIR) / "torch_output.bin";
+      std::ifstream torch_in(torchPath, std::ios::binary);
+      std::vector<double> torch_output(1 * 10);
+      torch_in.read(reinterpret_cast<char*>(torch_output.data()), torch_output.size() * sizeof(double));
+      for (size_t i = 0; i < 10; ++i) {
+        EXPECT_NEAR(result[i], torch_output[i], 1e-3);
+        std::cout << "result[" << i << "] = " << result[i] << ", torch_output[" << i << "] = " << torch_output[i] << std::endl;
+      }
     }
     return online_ms;
   };
