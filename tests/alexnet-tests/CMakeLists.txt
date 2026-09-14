@@ -42,3 +42,25 @@ add_alexnet_test(
   alexnet_n_profile.cpp
   alexnet_n8192
 )
+
+add_alexnet_test(
+  alexnet_n16384_tests
+  alexnet_n_tests.cpp
+  alexnet_n16384
+)
+add_alexnet_test(
+  alexnet_n16384_profile
+  alexnet_n_profile.cpp
+  alexnet_n16384
+)
+
+add_alexnet_test(
+  alexnet_n32768_tests
+  alexnet_n_tests.cpp
+  alexnet_n32768
+)
+add_alexnet_test(
+  alexnet_n32768_profile
+  alexnet_n_profile.cpp
+  alexnet_n32768
+)
