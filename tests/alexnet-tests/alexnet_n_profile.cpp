@@ -145,7 +145,7 @@ int kwarmups = 1;
 int kiterations = 3;
 double configuration_warmup_ms = 0.0;
 
-TEST(AlexnetTiny4096Profile, Configuration) {
+TEST(AlexnetTinyProfile, Configuration) {
   nvtxRangePushA("Configuration Warmup");
   for (int i=0; i < kwarmups; ++i) {
     sync_cuda();
@@ -225,7 +225,7 @@ TimingStats evaluation_stats;
 TimingStats decryption_stats;
 TimingStats online_total_stats;
 
-TEST(AlexnetTiny4096Profile, Inference) {
+TEST(AlexnetTinyProfile, Inference) {
   std::shared_ptr<cheddar::Context<word>> ctx;
   std::unique_ptr<UI> ui;
   alexnet_tiny__configure(ctx, ui);
@@ -403,7 +403,7 @@ TEST(AlexnetTiny4096Profile, Inference) {
 }
 
 
-TEST(AlexnetTiny4096Profile, Report) {
+TEST(AlexnetTinyProfile, Report) {
   auto print_stats = [](const char* name,
                       const TimingStats& stats) {
 

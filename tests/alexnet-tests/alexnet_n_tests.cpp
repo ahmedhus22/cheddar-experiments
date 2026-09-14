@@ -84,7 +84,7 @@ std::vector<double> test_input(1 * 3 * 16 * 16);
 std::vector<float> result(1 * 10);
 std::vector<double> torch_output(1 * 10);
 
-TEST(AlexnetTiny4096, OutputMatchesTorch) {
+TEST(AlexnetTiny, OutputMatchesTorch) {
   run_alexnet(test_input, result, torch_output);
   // Compare the result with pytorch implementation
   for (size_t i = 0; i < result.size(); ++i) {
@@ -93,12 +93,12 @@ TEST(AlexnetTiny4096, OutputMatchesTorch) {
   }
 }
 
-TEST(AlexnetTiny4096, OutputShape) {
+TEST(AlexnetTiny, OutputShape) {
   EXPECT_EQ(result.size(), 10);
   EXPECT_EQ(result.size(), torch_output.size());
 }
 
-TEST(AlexnetTiny4096, FiniteandNonZero) {
+TEST(AlexnetTiny, FiniteandNonZero) {
   bool has_nonzero = false;
   for (size_t i = 0; i < result.size(); ++i) {
     EXPECT_TRUE(std::isfinite(result[i])) << "result[" << i << "] is not finite";
@@ -109,7 +109,7 @@ TEST(AlexnetTiny4096, FiniteandNonZero) {
   EXPECT_TRUE(has_nonzero) << "All elements in the result are zero";
 }
 
-TEST(AlexnetTiny4096, MaxAbsoluteError) {
+TEST(AlexnetTiny, MaxAbsoluteError) {
   double max_abs_error = 0.0;
   for (size_t i = 0; i < result.size(); ++i) {
     double abs_error = std::abs(result[i] - torch_output[i]);
@@ -121,7 +121,7 @@ TEST(AlexnetTiny4096, MaxAbsoluteError) {
   EXPECT_LT(max_abs_error, 1e-3) << "Max absolute error is too large: " << max_abs_error;
 }
 
-TEST(AlexnetTiny4096, MaxRelativeError) {
+TEST(AlexnetTiny, MaxRelativeError) {
   double max_rel_error = 0.0;
   for (size_t i = 0; i < result.size(); ++i) {
     double rel_error = std::abs(result[i] - torch_output[i]) / (std::abs(torch_output[i]) + 1e-12);
@@ -133,7 +133,7 @@ TEST(AlexnetTiny4096, MaxRelativeError) {
   EXPECT_LT(max_rel_error, 1e-3) << "Max relative error is too large: " << max_rel_error;
 }
 
-TEST(AlexnetTiny4096, ArgmaxMatch) {
+TEST(AlexnetTiny, ArgmaxMatch) {
   size_t argmax_result = std::distance(result.begin(), std::max_element(result.begin(), result.end()));
   size_t argmax_torch = std::distance(torch_output.begin(), std::max_element(torch_output.begin(), torch_output.end()));
   std::cout << "Argmax index: " << argmax_result << std::endl;

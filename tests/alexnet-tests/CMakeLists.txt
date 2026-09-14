@@ -23,22 +23,22 @@ add_alexnet_test(
 
 add_alexnet_test(
   alexnet_n4096_tests
-  alexnet_n4096_tests.cpp
+  alexnet_n_tests.cpp
   alexnet_n4096
 )
 add_alexnet_test(
   alexnet_n4096_profile
-  alexnet_n4096_profile.cpp
+  alexnet_n_profile.cpp
   alexnet_n4096
 )
 
 add_alexnet_test(
   alexnet_n8192_tests
-  alexnet_n4096_tests.cpp
+  alexnet_n_tests.cpp
   alexnet_n8192
 )
 add_alexnet_test(
   alexnet_n8192_profile
-  alexnet_n4096_profile.cpp
+  alexnet_n_profile.cpp
   alexnet_n8192
 )
