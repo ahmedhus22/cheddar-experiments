@@ -1,7 +1,9 @@
 add_library(alexnet_tiny alexnet-tiny_cheddar.cpp)
 add_library(alexnet_n4096_legacy alexnet_n4096_legacy.cpp)
 add_library(alexnet_n4096 alexnet_n4096.cpp)
+add_library(alexnet_n8192 alexnet_n8192.cpp)
 
 target_link_libraries(alexnet_tiny PRIVATE cheddar)
 target_link_libraries(alexnet_n4096_legacy PRIVATE cheddar)
 target_link_libraries(alexnet_n4096 PRIVATE cheddar)
+target_link_libraries(alexnet_n8192 PRIVATE cheddar)
