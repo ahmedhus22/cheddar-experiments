@@ -83,6 +83,7 @@ target_link_libraries(
 )
 
 add_subdirectory(alexnet-tests)
+add_subdirectory(lenet-tests)
 
 include(GoogleTest)
 gtest_discover_tests(sumf_test matvec_8x8_tests alexnet_tiny_tests)

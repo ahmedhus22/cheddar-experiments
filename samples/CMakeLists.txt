@@ -7,4 +7,5 @@ target_link_libraries(fhe_sumf PRIVATE cheddar)
 target_link_libraries(fhe_matvec_8x8 PRIVATE cheddar)
 
 add_subdirectory(alexnet-tiny)
+add_subdirectory(lenet)
 add_subdirectory(attention)
