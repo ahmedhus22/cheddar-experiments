@@ -64,3 +64,15 @@ add_alexnet_test(
   alexnet_n_profile.cpp
   alexnet_n32768
 )
+
+set(ALEXNET_PROFILE
+  alexnet_n4096_profile
+  alexnet_n8192_profile
+  alexnet_n16384_profile
+  alexnet_n32768_profile
+)
+# DO NOT USE ctest -R "AlexnetTinyProfile\." for profiling tests, run each test individually Ex: ./build/tests/alexnet-tests/alexnet_n4096_profile
+foreach(alexnet_n ${ALEXNET_PROFILE})
+  gtest_discover_tests(${alexnet_n})
+  # add_test(NAME ${alexnet_n} COMMAND ${alexnet_n}) 
+endforeach()
