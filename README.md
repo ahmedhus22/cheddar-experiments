@@ -5,7 +5,9 @@ There are submodules in this repository.
 `git clone --recurse-submodules https://github.com/ahmedhus22/cheddar-experiments.git`
 Or initialize submodules after cloning: `git submodule update --init --recursive`
 ```
-cmake -S . -B build
+cmake -S . -B build \
+    -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc 
+
 cmake --build build
 ```
 ### Run Tests
@@ -28,7 +30,15 @@ $PWD/sample.mlir > sample_cheddar.mlir
 
 ### Emit the CHEDDAR C++ code 
 ```
-bazel run //tools:heir-translate -- --emit-cheddar $(pwd)/sample.mlir > sample.cpp
+bazel run //tools:heir-translate -- --emit-cheddar $PWD/sample.mlir > sample.cpp
+```
+
+### EMITC Backend
+```
+bazel run //tools:heir-opt --  --ext-const-threshold=1   '--annotate-module=backend=cheddar scheme=ckks'   --linalg-canonicalizations   '--torch-linalg-to-ckks=min-slot-count=16384 greedy-level-budget=10'   '--scheme-to-cheddar'   --cheddar-to-emitc   $PWD/sample.mlir > $PWD/samples/sample_cheddar.mlir
+```
+```
+bazel run //tools:heir-translate -- --mlir-to-cpp $PWD/sample_cheddar.mlir > $PWD/sample.cpp
 ```
 
 ## Required Setup

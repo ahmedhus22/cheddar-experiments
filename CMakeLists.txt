@@ -8,8 +8,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CUDA_ARCHITECTURES 60 61 70 75 80 86 89 90)
 # compile_commands.json for IDEs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CUDAToolkit_ROOT "/usr/local/cuda")
-set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+if(NOT CUDAToolkit_ROOT)
+    set(CUDAToolkit_ROOT "/usr/local/cuda")
+endif()
+if(NOT CMAKE_CUDA_COMPILER)
+    set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
+endif()
 find_package(CUDAToolkit REQUIRED)
 
 # Make sure to install Openfhe to this path
