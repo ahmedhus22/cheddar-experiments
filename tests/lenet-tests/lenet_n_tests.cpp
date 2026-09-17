@@ -80,7 +80,7 @@ void run_lenet(std::vector<float> &test_input, std::vector<float> &result, std::
   torch_in.read(reinterpret_cast<char*>(torch_output.data()), torch_output.size() * sizeof(float));
 }
 
-std::vector<float> test_input(1 * 3 * 16 * 16);
+std::vector<float> test_input(1 * 1 * 28 * 28);
 std::vector<float> result(1 * 10);
 std::vector<float> torch_output(1 * 10);
 
