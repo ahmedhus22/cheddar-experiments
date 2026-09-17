@@ -89,7 +89,8 @@ static void sync_cuda() {
   }
 }
 
-
+void lenet__setup(std::shared_ptr<cheddar::Context<word>>& v1);
+void lenet__keygen(const std::shared_ptr<cheddar::Context<word>>& v1, std::unique_ptr<cheddar::UserInterface<word>>& v2);
 void lenet__configure(std::shared_ptr<cheddar::Context<word>>& ctx,
                       std::unique_ptr<UI>& ui);
 void lenet__encrypt__arg0(cheddar::Context<word>* ctx,
@@ -114,6 +115,7 @@ int kwarmups = 1;
 int kiterations = 3;
 double configuration_warmup_ms = 0.0;
 
+// TODO: Refactor the following code to use generic benchmarking utilities, This code is too similar to alexnet_n_profile.cpp and can be refactored to avoid code duplication.
 TEST(LeNetProfile, Configuration) {
   nvtxRangePushA("Configuration Warmup");
   for (int i=0; i < kwarmups; ++i) {
@@ -144,14 +146,7 @@ TEST(LeNetProfile, Configuration) {
     sync_cuda();
     auto ctx_start = Clock::now();
     std::shared_ptr<cheddar::Context<word>> ctx;
-    static cheddar::Parameter<word> cheddar_param(15, 
-      static_cast<double>(static_cast<word>(1) << 45), 
-      7, 
-      std::vector<std::pair<int, int>>{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}, 
-      std::vector<word>{36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 
-        35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL}, 
-      std::vector<word>{1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL});
-    ctx = cheddar::Context<word>::Create(cheddar_param);
+    lenet__setup(ctx);
     sync_cuda();
     auto ctx_end = Clock::now();
     context_generation.add(elapsed_ms(ctx_start, ctx_end));
