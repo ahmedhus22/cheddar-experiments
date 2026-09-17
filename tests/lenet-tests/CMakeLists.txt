@@ -20,3 +20,9 @@ add_lenet_test(
   lenet_n_tests.cpp
   lenet_n2048
 )
+
+add_lenet_test(
+  lenet_n2048_profile
+  lenet_n_profile.cpp
+  lenet_n2048
+)
