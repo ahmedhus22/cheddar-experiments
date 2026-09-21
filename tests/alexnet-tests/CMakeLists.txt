@@ -13,11 +13,17 @@ function(add_alexnet_test TEST_NAME SOURCE TEST_LIBRARY)
     PRIVATE
       TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../testdata/alexnet-tiny-n4096/"
   )
+  target_include_directories(${TEST_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common/)
 endfunction()
 
 add_alexnet_test(
   alexnet_n4096_ltests
   alexnet_n4096_ltests.cpp
+  alexnet_n4096_legacy
+)
+add_alexnet_test(
+  alexnet_n4096_lprofile
+  alexnet_n_lprofile.cpp
   alexnet_n4096_legacy
 )
 
