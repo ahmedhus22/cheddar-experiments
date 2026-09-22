@@ -37,9 +37,84 @@ using Complex = std::complex<double>;
 
 std::vector<Ct> alexnet_tiny(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0);
 std::vector<Ct> alexnet_tiny__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1);
+// void alexnet_tiny_encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1, std::array<Ct, 1>& out);
 std::vector<double> alexnet_tiny__decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1);
 std::tuple<CtxPtr, UI> __configure();
 
+// void alexnet_tiny_encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1, std::array<Ct, 1>& out) {
+//     std::vector<Ct> result = alexnet_tiny__encrypt__arg0(ctx, encoder, ui, v0, ui1);
+//     out[0] = std::move(result[0]);
+// }
+// void alexnet_tiny(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, std::array<Ct, 1>& out) {
+//     std::vector<Ct> result = alexnet_tiny(ctx, encoder, ui, v0);
+//     out[0] = std::move(result[0]);
+// }
+// void alexnet_tiny_decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1, std::array<double, 10>& out) {
+//     std::vector<double> result = alexnet_tiny__decrypt__result0(ctx, encoder, ui, v0, ui1);
+//     std::copy(result.begin(), result.end(), out.begin());
+// }
+
+void alexnet_tiny__setup(std::shared_ptr<Context<word>>& v1) {
+  static Parameter<word> cheddar_param(15, static_cast<double>(static_cast<word>(1) << 45), 7, std::vector<std::pair<int, int>>{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}, std::vector<word>{36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL}, std::vector<word>{1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL});
+  v1 = Context<word>::Create(cheddar_param);
+  return;
+}
+void alexnet_tiny__keygen(const std::shared_ptr<Context<word>>& v1, std::unique_ptr<UserInterface<word>>& v2) {
+  v2 = std::make_unique<UserInterface<word>>(v1);
+  v2->PrepareRotationKey(1, 7);
+  v2->PrepareRotationKey(2, 7);
+  v2->PrepareRotationKey(3, 7);
+  v2->PrepareRotationKey(4, 7);
+  v2->PrepareRotationKey(5, 7);
+  v2->PrepareRotationKey(6, 7);
+  v2->PrepareRotationKey(7, 7);
+  v2->PrepareRotationKey(8, 7);
+  v2->PrepareRotationKey(9, 7);
+  v2->PrepareRotationKey(10, 7);
+  v2->PrepareRotationKey(11, 7);
+  v2->PrepareRotationKey(12, 7);
+  v2->PrepareRotationKey(13, 7);
+  v2->PrepareRotationKey(14, 7);
+  v2->PrepareRotationKey(15, 7);
+  v2->PrepareRotationKey(16, 7);
+  v2->PrepareRotationKey(24, 7);
+  v2->PrepareRotationKey(32, 7);
+  v2->PrepareRotationKey(36, 7);
+  v2->PrepareRotationKey(40, 7);
+  v2->PrepareRotationKey(48, 7);
+  v2->PrepareRotationKey(56, 7);
+  v2->PrepareRotationKey(60, 7);
+  v2->PrepareRotationKey(64, 7);
+  v2->PrepareRotationKey(72, 7);
+  v2->PrepareRotationKey(80, 7);
+  v2->PrepareRotationKey(84, 7);
+  v2->PrepareRotationKey(96, 7);
+  v2->PrepareRotationKey(108, 7);
+  v2->PrepareRotationKey(112, 7);
+  v2->PrepareRotationKey(120, 7);
+  v2->PrepareRotationKey(128, 7);
+  v2->PrepareRotationKey(144, 7);
+  v2->PrepareRotationKey(160, 7);
+  v2->PrepareRotationKey(176, 7);
+  v2->PrepareRotationKey(192, 7);
+  v2->PrepareRotationKey(208, 7);
+  v2->PrepareRotationKey(224, 7);
+  v2->PrepareRotationKey(240, 7);
+  v2->PrepareRotationKey(256, 7);
+  v2->PrepareRotationKey(512, 7);
+  return;
+}
+void alexnet_tiny__configure(std::shared_ptr<Context<word>>& v1, std::unique_ptr<UserInterface<word>>& v2) {
+  bool v3 = true;
+  std::shared_ptr<Context<word>> v4;
+  alexnet_tiny__setup(v4);
+  alexnet_tiny__keygen(v4, v2);
+  v1 = v4;
+  if (v3) {
+    v4 = std::shared_ptr<Context<word>>();
+  }
+  return;
+}
 
 // ============================================================================
 // Global benchmark configuration
@@ -86,11 +161,13 @@ protected:
   // Shared model state
   // --------------------------------------------------------------------------
 
-  static inline std::shared_ptr<Context> ctx;
+  static inline CtxPtr ctx;
 
   static inline std::unique_ptr<UI> ui;
 
   static inline std::vector<float> test_input_float;
+
+  static inline std::vector<double> test_input;
 
 //   static inline Evk* evk = nullptr;
 
@@ -110,10 +187,11 @@ protected:
     ctx.reset();
     ui.reset();
 
-    auto[new_ctx, new_ui] = __configure();
+    // std::tie(ctx, ui) = __configure();
 
-    ctx = std::move(new_ctx);
-    ui = std::move(new_ui);
+    alexnet_tiny__configure(
+        ctx,
+        ui);
 
     ASSERT_NE(ctx, nullptr);
     ASSERT_NE(ui, nullptr);
@@ -132,8 +210,7 @@ protected:
     // Input
     // ------------------------------------------------------------------------
 
-    std::vector<double> test_input(
-        1 * 3 * 16 * 16);
+    test_input.resize(1 * 3 * 16 * 16);
 
     const std::filesystem::path input_path =
         std::filesystem::path(TEST_DATA_DIR) /
@@ -221,10 +298,7 @@ TEST_F(
     ctx.reset();
     ui.reset();
 
-    auto[new_ctx, new_ui] = __configure();
-
-    ctx = std::move(new_ctx);
-    ui = std::move(new_ui);
+    alexnet_tiny__configure(ctx, ui);
   };
 
 
@@ -347,17 +421,12 @@ TEST_F(
   benchmark.inference.inference =
       [&]() -> InferenceTiming {
 
-    std::array<Ct, 1> encrypted;
+    std::vector<Ct> encrypted;
 
-    std::array<Pt, 4> plaintexts;
 
-    std::array<
-        std::shared_ptr<LinearTransform>,
-        4> transforms;
+    std::vector<Ct> evaluated;
 
-    std::array<Ct, 1> evaluated;
-
-    float result[10];
+    std::vector<double> result;
 
 
     InferenceTiming timing;
@@ -372,13 +441,13 @@ TEST_F(
             "Encryption",
             [&] {
 
-              alexnet_tiny__encrypt__arg0(
-                  ctx.get(),
+              encrypted = alexnet_tiny__encrypt__arg0(
+                  ctx,
                   ctx->encoder_,
-                  *evk,
-                  test_input_float.data(),
-                  ui.get(),
-                  encrypted);
+                  *ui,
+                  test_input,
+                  *ui
+                  );
             });
 
 
@@ -386,17 +455,17 @@ TEST_F(
     // Plaintext preprocessing
     // ------------------------------------------------------------------------
 
-    timing.preprocessing_ms =
-        time_phase(
-            "Plaintext Preprocessing",
-            [&] {
+    // timing.preprocessing_ms =
+    //     time_phase(
+    //         "Plaintext Preprocessing",
+    //         [&] {
 
-              alexnet_tiny__preprocessing(
-                  ctx.get(),
-                  ctx->encoder_,
-                  transforms,
-                  plaintexts);
-            });
+    //           alexnet_tiny__preprocessing(
+    //               ctx.get(),
+    //               ctx->encoder_,
+    //               transforms,
+    //               plaintexts);
+    //         });
 
 
     // ------------------------------------------------------------------------
@@ -408,15 +477,11 @@ TEST_F(
             "Encrypted Computation",
             [&] {
 
-              alexnet_tiny__preprocessed(
-                  ctx.get(),
+              evaluated = alexnet_tiny(
+                  ctx,
                   ctx->encoder_,
-                  *evk,
-                  *evk_map,
-                  encrypted,
-                  transforms,
-                  plaintexts,
-                  evaluated);
+                  *ui,
+                  encrypted);
             });
 
 
@@ -429,13 +494,12 @@ TEST_F(
             "Decryption",
             [&] {
 
-              alexnet_tiny__decrypt__result0(
-                  ctx.get(),
+              result = alexnet_tiny__decrypt__result0(
+                  ctx,
                   ctx->encoder_,
-                  *evk,
+                  *ui,
                   evaluated,
-                  ui.get(),
-                  result);
+                  *ui);
             });
 
 
@@ -451,7 +515,7 @@ TEST_F(
         output_path,
         std::ios::binary);
 
-    ASSERT_TRUE(torch_in.good());
+    EXPECT_TRUE(torch_in.good());
 
     std::vector<double> torch_output(10);
 
@@ -460,7 +524,7 @@ TEST_F(
             torch_output.data()),
         torch_output.size() * sizeof(double));
 
-    ASSERT_EQ(
+    EXPECT_EQ(
         torch_in.gcount(),
         static_cast<std::streamsize>(
             torch_output.size() * sizeof(double)));
