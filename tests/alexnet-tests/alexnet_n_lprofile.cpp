@@ -37,22 +37,8 @@ using Complex = std::complex<double>;
 
 std::vector<Ct> alexnet_tiny(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0);
 std::vector<Ct> alexnet_tiny__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1);
-// void alexnet_tiny_encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1, std::array<Ct, 1>& out);
 std::vector<double> alexnet_tiny__decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1);
 std::tuple<CtxPtr, UI> __configure();
-
-// void alexnet_tiny_encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1, std::array<Ct, 1>& out) {
-//     std::vector<Ct> result = alexnet_tiny__encrypt__arg0(ctx, encoder, ui, v0, ui1);
-//     out[0] = std::move(result[0]);
-// }
-// void alexnet_tiny(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, std::array<Ct, 1>& out) {
-//     std::vector<Ct> result = alexnet_tiny(ctx, encoder, ui, v0);
-//     out[0] = std::move(result[0]);
-// }
-// void alexnet_tiny_decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1, std::array<double, 10>& out) {
-//     std::vector<double> result = alexnet_tiny__decrypt__result0(ctx, encoder, ui, v0, ui1);
-//     std::copy(result.begin(), result.end(), out.begin());
-// }
 
 void alexnet_tiny__setup(std::shared_ptr<Context<word>>& v1) {
   static Parameter<word> cheddar_param(15, static_cast<double>(static_cast<word>(1) << 45), 7, std::vector<std::pair<int, int>>{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}, std::vector<word>{36028797017456641ULL, 35184376545281ULL, 35184367828993ULL, 35184373989377ULL, 35184368025601ULL, 35184373006337ULL, 35184368877569ULL, 35184372744193ULL}, std::vector<word>{1152921504608747521ULL, 1152921504614055937ULL, 1152921504615628801ULL});
@@ -269,12 +255,6 @@ protected:
 //   Key Generation
 //   Evaluation Key Generation
 //   Configuration
-//
-// IMPORTANT:
-// Configuration is benchmarked independently for each measured iteration.
-// Each iteration should construct its own fresh state if the generated
-// configuration function creates/replaces the context and UI.
-//
 
 TEST_F(
     AlexnetTinyProfile,
@@ -304,13 +284,11 @@ TEST_F(
   // Key Generation
   // --------------------------------------------------------------------------
 
-
-
   // --------------------------------------------------------------------------
   // Evaluation Key Generation
   // --------------------------------------------------------------------------
 
-  // 
+  // Key generation and evaluation key generation are combined in the alexnet_tiny__configure function
 
 
   // --------------------------------------------------------------------------
@@ -329,11 +307,6 @@ TEST_F(
     ASSERT_NE(ctx, nullptr);
     ASSERT_NE(ui, nullptr);
   };
-
-
-  // --------------------------------------------------------------------------
-  // Run setup benchmark
-  // --------------------------------------------------------------------------
 
   run_setup(
       setup_benchmark.setup,

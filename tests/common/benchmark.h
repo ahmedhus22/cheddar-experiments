@@ -664,9 +664,8 @@ inline void print_stats(
 // ============================================================================
 // Setup Report
 // ============================================================================
-
 inline void report_setup(
-    const SetupBenchmark& setup) {
+    const SetupBenchmark& benchmark) {
 
   std::cout
       << "\n"
@@ -674,28 +673,54 @@ inline void report_setup(
       << "Configuration / Setup Results\n"
       << "========================================\n";
 
-  if (!setup.context_generation_stats.empty()) {
+
+  if (benchmark.specification.context_generation &&
+      !benchmark.context_generation_stats.empty()) {
+
     print_stats(
         "Context Generation",
-        setup.context_generation_stats);
+        benchmark.context_generation_stats);
   }
 
-  if (!setup.key_generation_stats.empty()) {
+
+  if (benchmark.specification.key_generation &&
+      !benchmark.key_generation_stats.empty()) {
+
     print_stats(
         "Key Generation",
-        setup.key_generation_stats);
+        benchmark.key_generation_stats);
   }
 
-  if (!setup.eval_key_generation_stats.empty()) {
+
+  if (benchmark.specification.eval_key_generation &&
+      !benchmark.eval_key_generation_stats.empty()) {
+
     print_stats(
         "Evaluation Key Generation",
-        setup.eval_key_generation_stats);
+        benchmark.eval_key_generation_stats);
   }
 
-  if (!setup.configuration_stats.empty()) {
+
+  if (benchmark.specification.configuration &&
+      !benchmark.configuration_stats.empty()) {
+
     print_stats(
         "Configuration",
-        setup.configuration_stats);
+        benchmark.configuration_stats);
+  }
+
+
+  // Only report setup total if there was at least
+  // one setup phase.
+  if ((benchmark.specification.context_generation ||
+       benchmark.specification.key_generation ||
+       benchmark.specification.eval_key_generation ||
+       benchmark.specification.configuration) &&
+      !benchmark.setup_total_stats.empty()) {
+
+    print_stats(
+        "Setup Total",
+        benchmark.setup_total_stats);
   }
 }
 
