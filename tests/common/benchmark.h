@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -158,23 +159,36 @@ struct BenchmarkConfig {
 // Each phase can have its own callable and TimingStats.
 //
 
-struct SetupBenchmark {
 
+struct SetupTiming {
+  double context_generation_ms = 0.0;
+  double key_generation_ms = 0.0;
+  double eval_key_generation_ms = 0.0;
+  double configuration_ms = 0.0;
+
+  double total_ms() const {
+    return context_generation_ms +
+           key_generation_ms +
+           eval_key_generation_ms +
+           configuration_ms;
+  }
+};
+
+struct SetupSpecification {
   std::function<void()> context_generation;
-
   std::function<void()> key_generation;
-
   std::function<void()> eval_key_generation;
-
   std::function<void()> configuration;
+};
 
-  TimingStats context_generation_stats;
+struct SetupBenchmark { 
+  SetupSpecification specification; 
 
-  TimingStats key_generation_stats;
-
-  TimingStats eval_key_generation_stats;
-
-  TimingStats configuration_stats;
+  TimingStats context_generation_stats; 
+  TimingStats key_generation_stats; 
+  TimingStats eval_key_generation_stats; 
+  TimingStats configuration_stats; 
+  TimingStats setup_total_stats; 
 };
 
 
@@ -331,64 +345,6 @@ inline double time_setup_phase(
 }
 
 
-// ============================================================================
-// Run One Setup Phase
-// ============================================================================
-
-inline void run_setup_phase(
-    const char* name,
-    const std::function<void()>& function,
-    TimingStats& stats,
-    const BenchmarkConfig& config) {
-
-  if (!function) {
-    return;
-  }
-
-  // --------------------------------------------------------------------------
-  // Warmup
-  // --------------------------------------------------------------------------
-
-  for (int i = 0; i < config.warmups; ++i) {
-
-    const double warmup_ms =
-        time_setup_phase(
-            name,
-            function);
-
-    std::cerr
-        << name
-        << " warmup "
-        << (i + 1)
-        << ": "
-        << warmup_ms
-        << " ms\n";
-  }
-
-
-  // --------------------------------------------------------------------------
-  // Measured repetitions
-  // --------------------------------------------------------------------------
-
-  for (int i = 0; i < config.iterations; ++i) {
-
-    const double ms =
-        time_setup_phase(
-            name,
-            function);
-
-    stats.add(ms);
-
-    std::cerr
-        << name
-        << " iteration "
-        << (i + 1)
-        << ": "
-        << ms
-        << " ms\n";
-  }
-}
-
 
 // ============================================================================
 // Run Configuration / Setup
@@ -405,43 +361,120 @@ inline void run_setup_phase(
 //
 
 inline void run_setup(
-    SetupBenchmark& setup,
+    SetupBenchmark& benchmark,
     const BenchmarkConfig& config) {
 
-  std::cerr
-      << "\n"
-      << "========================================\n"
-      << "Configuration / Setup\n"
-      << "========================================\n";
+  auto& setup = benchmark.specification;
+
+  // Warmup
+  for (int i = 0; i < config.warmups; ++i) {
+
+    double total_ms = 0.0;
+
+    if (setup.context_generation) {
+      total_ms += time_phase(
+          "Context Generation",
+          setup.context_generation);
+    }
+
+    if (setup.key_generation) {
+      total_ms += time_phase(
+          "Key Generation",
+          setup.key_generation);
+    }
+
+    if (setup.eval_key_generation) {
+      total_ms += time_phase(
+          "Evaluation Key Generation",
+          setup.eval_key_generation);
+    }
+
+    if (setup.configuration) {
+      total_ms += time_phase(
+          "Configuration",
+          setup.configuration);
+    }
+
+    std::cerr
+        << "Setup warmup "
+        << (i + 1)
+        << ": "
+        << total_ms
+        << " ms\n";
+  }
 
 
-  run_setup_phase(
-      "Context Generation",
-      setup.context_generation,
-      setup.context_generation_stats,
-      config);
+  // Measured repetitions
+  for (int i = 0; i < config.iterations; ++i) {
+
+    double context_generation_ms = 0.0;
+    double key_generation_ms = 0.0;
+    double eval_key_generation_ms = 0.0;
+    double configuration_ms = 0.0;
 
 
-  run_setup_phase(
-      "Key Generation",
-      setup.key_generation,
-      setup.key_generation_stats,
-      config);
+    if (setup.context_generation) {
+      context_generation_ms =
+          time_phase(
+              "Context Generation",
+              setup.context_generation);
+    }
+
+    if (setup.key_generation) {
+      key_generation_ms =
+          time_phase(
+              "Key Generation",
+              setup.key_generation);
+    }
+
+    if (setup.eval_key_generation) {
+      eval_key_generation_ms =
+          time_phase(
+              "Evaluation Key Generation",
+              setup.eval_key_generation);
+    }
+
+    if (setup.configuration) {
+      configuration_ms =
+          time_phase(
+              "Configuration",
+              setup.configuration);
+    }
 
 
-  run_setup_phase(
-      "Evaluation Key Generation",
-      setup.eval_key_generation,
-      setup.eval_key_generation_stats,
-      config);
+    const double total_ms =
+        context_generation_ms +
+        key_generation_ms +
+        eval_key_generation_ms +
+        configuration_ms;
 
 
-  run_setup_phase(
-      "Configuration",
-      setup.configuration,
-      setup.configuration_stats,
-      config);
+    benchmark.context_generation_stats.add(
+        context_generation_ms);
+
+    benchmark.key_generation_stats.add(
+        key_generation_ms);
+
+    benchmark.eval_key_generation_stats.add(
+        eval_key_generation_ms);
+
+    benchmark.configuration_stats.add(
+        configuration_ms);
+
+    benchmark.setup_total_stats.add(
+        total_ms);
+
+
+    std::cerr
+        << "Setup iteration "
+        << (i + 1)
+        << ": "
+        << total_ms
+        << " ms\n";
+  }
 }
+
+
 
 
 // ============================================================================

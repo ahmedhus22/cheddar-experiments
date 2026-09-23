@@ -290,55 +290,34 @@ TEST_F(
   // Context Generation
   // --------------------------------------------------------------------------
 
-  setup_benchmark.setup.context_generation = [&] {
+    //   setup_benchmark.setup.specification.context_generation = [&] {
 
-    // Replace this with the actual context-generation function if your
-    // generated code exposes one.
 
-    ctx.reset();
-    ui.reset();
+    //     ctx.reset();
+    //     ui.reset();
 
-    alexnet_tiny__configure(ctx, ui);
-  };
+    //     alexnet_tiny__configure(ctx, ui);
+    //   };
 
 
   // --------------------------------------------------------------------------
   // Key Generation
   // --------------------------------------------------------------------------
 
-  setup_benchmark.setup.key_generation = [&] {
-
-    // Put the generated key-generation call here.
-    //
-    // Example:
-    //
-    // alexnet_tiny__generate_keys(
-    //     ctx,
-    //     ui);
-  };
 
 
   // --------------------------------------------------------------------------
   // Evaluation Key Generation
   // --------------------------------------------------------------------------
 
-  setup_benchmark.setup.eval_key_generation = [&] {
-
-    // Put the generated evaluation-key generation call here.
-    //
-    // Example:
-    //
-    // alexnet_tiny__generate_eval_keys(
-    //     ctx,
-    //     ui);
-  };
+  // 
 
 
   // --------------------------------------------------------------------------
   // Configuration
   // --------------------------------------------------------------------------
 
-  setup_benchmark.setup.configuration = [&] {
+  setup_benchmark.setup.specification.configuration = [&] {
 
     ctx.reset();
     ui.reset();
