@@ -16,38 +16,19 @@ function(add_lenet_test TEST_NAME SOURCE TEST_LIBRARY)
   target_include_directories(${TEST_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common/)
 endfunction()
 
-add_lenet_test(
-  lenet_n2048_tests
-  lenet_n_tests.cpp
-  lenet_n2048
-)
-add_lenet_test(
-  lenet_n2048_profile
-  lenet_n_profile.cpp
-  lenet_n2048
-)
+foreach(n 2048 8192 16384)
+  add_lenet_test(
+    lenet_n${n}_tests
+    lenet_n_tests.cpp
+    lenet_n${n}
+  )
 
-add_lenet_test(
-  lenet_n8192_tests
-  lenet_n_tests.cpp
-  lenet_n8192
-)
-add_lenet_test(
-  lenet_n8192_profile
-  lenet_n_profile.cpp
-  lenet_n8192
-)
-
-add_lenet_test(
-  lenet_n16384_tests
-  lenet_n_tests.cpp
-  lenet_n16384
-)
-add_lenet_test(
-  lenet_n16384_profile
-  lenet_n_profile.cpp
-  lenet_n16384
-)
+  add_lenet_test(
+    lenet_n${n}_profile
+    lenet_n_profile.cpp
+    lenet_n${n}
+  )
+endforeach()
 
 if(TARGET lenet_n32768)
   add_lenet_test(
@@ -62,8 +43,12 @@ if(TARGET lenet_n32768)
   )
 endif()
 
-add_lenet_test(
-  lenet_n2048_lprofile
-  lenet_n_lprofile.cpp
-  lenet_n2048_legacy
-)
+if(BUILD_LENET_LEGACY)
+  foreach(n 2048 8192 16384 32768)
+    add_alexnet_test(
+        lenet_n${n}_lprofile
+        lenet_n_lprofile.cpp
+        lenet_n${n}_legacy
+    )
+endforeach()
+endif()

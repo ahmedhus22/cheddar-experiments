@@ -79,6 +79,9 @@ else()
   )
 endif()
 
+option(BUILD_LENET_LEGACY
+       "Build lenet_legacy"
+       OFF)
 add_subdirectory(samples)
 
 enable_testing()
