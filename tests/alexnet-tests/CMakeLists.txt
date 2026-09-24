@@ -21,55 +21,28 @@ add_alexnet_test(
   alexnet_n4096_ltests.cpp
   alexnet_n4096_legacy
 )
-add_alexnet_test(
-  alexnet_n4096_lprofile
-  alexnet_n_lprofile.cpp
-  alexnet_n4096_legacy
-)
 
-add_alexnet_test(
-  alexnet_n4096_tests
-  alexnet_n_tests.cpp
-  alexnet_n4096
-)
-add_alexnet_test(
-  alexnet_n4096_profile
-  alexnet_n_profile.cpp
-  alexnet_n4096
-)
+foreach(n 4096 8192 16384 32768)
+  add_alexnet_test(
+    alexnet_n${n}_lprofile
+    alexnet_n_lprofile.cpp
+    alexnet_n${n}_legacy
+  )
+endforeach()
 
-add_alexnet_test(
-  alexnet_n8192_tests
-  alexnet_n_tests.cpp
-  alexnet_n8192
-)
-add_alexnet_test(
-  alexnet_n8192_profile
-  alexnet_n_profile.cpp
-  alexnet_n8192
-)
+foreach(n 4096 8192 16384 32768)
+  add_alexnet_test(
+    alexnet_n${n}_tests
+    alexnet_n_tests.cpp
+    alexnet_n${n}
+  )
 
-add_alexnet_test(
-  alexnet_n16384_tests
-  alexnet_n_tests.cpp
-  alexnet_n16384
-)
-add_alexnet_test(
-  alexnet_n16384_profile
-  alexnet_n_profile.cpp
-  alexnet_n16384
-)
-
-add_alexnet_test(
-  alexnet_n32768_tests
-  alexnet_n_tests.cpp
-  alexnet_n32768
-)
-add_alexnet_test(
-  alexnet_n32768_profile
-  alexnet_n_profile.cpp
-  alexnet_n32768
-)
+  add_alexnet_test(
+    alexnet_n${n}_profile
+    alexnet_n_profile.cpp
+    alexnet_n${n}
+  )
+endforeach()
 
 set(ALEXNET_PROFILE
   alexnet_n4096_profile
