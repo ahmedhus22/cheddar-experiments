@@ -13,6 +13,7 @@ function(add_lenet_test TEST_NAME SOURCE TEST_LIBRARY)
     PRIVATE
       TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../testdata/lenet-n2048/"
   )
+  target_include_directories(${TEST_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common/)
 endfunction()
 
 add_lenet_test(
@@ -60,3 +61,9 @@ if(TARGET lenet_n32768)
     lenet_n32768
   )
 endif()
+
+add_lenet_test(
+  lenet_n2048_lprofile
+  lenet_n_lprofile.cpp
+  lenet_n2048_legacy
+)
