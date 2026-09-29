@@ -36,38 +36,42 @@
   using Enc = Encoder<word>;
 
 
-std::vector<Ct> alexnet_tiny(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0);
-std::vector<Ct> alexnet_tiny__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1);
-std::vector<double> alexnet_tiny__decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1);
+std::vector<Ct> lenet(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0);
+std::vector<Ct> lenet__encrypt__arg0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<double>& v0, UI& ui1);
+std::vector<double> lenet__decrypt__result0(CtxPtr ctx, Enc& encoder, UI& ui, const std::vector<Ct>& v0, UI& ui1);
 std::tuple<CtxPtr, UI> __configure();
 
-void run_alexnet(std::vector<double> &test_input, std::vector<double> &result, std::vector<double> &torch_output) {
+void run_lenet(std::vector<double> &test_input, std::vector<double> &result, std::vector<double> &torch_output) {
   auto[ctx, ui] = __configure();
 
   std::filesystem::path inPath =
     std::filesystem::path(TEST_DATA_DIR) / "input.bin";
   std::ifstream in(inPath, std::ios::binary);
-  in.read(reinterpret_cast<char*>(test_input.data()), test_input.size() * sizeof(double));
+  std::vector<float> test_input_float(1 * 1 * 28 * 28);
+  in.read(reinterpret_cast<char*>(test_input_float.data()), test_input_float.size() * sizeof(float));
+  test_input.assign(test_input_float.begin(), test_input_float.end());
 
   // encrypt input
-  auto encrypted_input = alexnet_tiny__encrypt__arg0(ctx, ctx->encoder_, ui, test_input, ui);
-  // alexnet_tiny on encrypted input
-  auto encrypted_result = alexnet_tiny(ctx, ctx->encoder_, ui, encrypted_input);
+  auto encrypted_input = lenet__encrypt__arg0(ctx, ctx->encoder_, ui, test_input, ui);
+  // lenet on encrypted input
+  auto encrypted_result = lenet(ctx, ctx->encoder_, ui, encrypted_input);
   // decrypt result
-  result = alexnet_tiny__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
+  result = lenet__decrypt__result0(ctx, ctx->encoder_, ui, encrypted_result, ui);
 
   std::filesystem::path torchPath =
     std::filesystem::path(TEST_DATA_DIR) / "torch_output.bin";
   std::ifstream torch_in(torchPath, std::ios::binary);
-  torch_in.read(reinterpret_cast<char*>(torch_output.data()), torch_output.size() * sizeof(double));
+  std::vector<float> torch_output_float(1 * 10);
+  torch_in.read(reinterpret_cast<char*>(torch_output_float.data()), torch_output_float.size() * sizeof(float));
+  torch_output.assign(torch_output_float.begin(), torch_output_float.end());
 }
 
-std::vector<double> test_input(1 * 3 * 16 * 16);
+std::vector<double> test_input(1 * 1 * 28 * 28);
 std::vector<double> result(1 * 10);
 std::vector<double> torch_output(1 * 10);
 
-TEST(AlexnetTiny4096, OutputMatchesTorch) {
-  run_alexnet(test_input, result, torch_output);
+TEST(LenetLegacy, OutputMatchesTorch) {
+  run_lenet(test_input, result, torch_output);
   // Compare the result with pytorch implementation
   for (size_t i = 0; i < result.size(); ++i) {
     EXPECT_NEAR(result[i], torch_output[i], 1e-3);
@@ -75,12 +79,12 @@ TEST(AlexnetTiny4096, OutputMatchesTorch) {
   }
 }
 
-TEST(AlexnetTiny4096, OutputShape) {
+TEST(LenetLegacy, OutputShape) {
   EXPECT_EQ(result.size(), 10);
   EXPECT_EQ(result.size(), torch_output.size());
 }
 
-TEST(AlexnetTiny4096, FiniteandNonZero) {
+TEST(LenetLegacy, FiniteandNonZero) {
   bool has_nonzero = false;
   for (size_t i = 0; i < result.size(); ++i) {
     EXPECT_TRUE(std::isfinite(result[i])) << "result[" << i << "] is not finite";
@@ -91,7 +95,7 @@ TEST(AlexnetTiny4096, FiniteandNonZero) {
   EXPECT_TRUE(has_nonzero) << "All elements in the result are zero";
 }
 
-TEST(AlexnetTiny4096, MaxAbsoluteError) {
+TEST(LenetLegacy, MaxAbsoluteError) {
   double max_abs_error = 0.0;
   for (size_t i = 0; i < result.size(); ++i) {
     double abs_error = std::abs(result[i] - torch_output[i]);
@@ -103,7 +107,7 @@ TEST(AlexnetTiny4096, MaxAbsoluteError) {
   EXPECT_LT(max_abs_error, 1e-3) << "Max absolute error is too large: " << max_abs_error;
 }
 
-TEST(AlexnetTiny4096, MaxRelativeError) {
+TEST(LenetLegacy, MaxRelativeError) {
   double max_rel_error = 0.0;
   for (size_t i = 0; i < result.size(); ++i) {
     double rel_error = std::abs(result[i] - torch_output[i]) / (std::abs(torch_output[i]) + 1e-12);
@@ -115,7 +119,7 @@ TEST(AlexnetTiny4096, MaxRelativeError) {
   EXPECT_LT(max_rel_error, 1e-3) << "Max relative error is too large: " << max_rel_error;
 }
 
-TEST(AlexnetTiny4096, ArgmaxMatch) {
+TEST(LenetLegacy, ArgmaxMatch) {
   size_t argmax_result = std::distance(result.begin(), std::max_element(result.begin(), result.end()));
   size_t argmax_torch = std::distance(torch_output.begin(), std::max_element(torch_output.begin(), torch_output.end()));
   std::cout << "Argmax index: " << argmax_result << std::endl;

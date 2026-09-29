@@ -45,10 +45,15 @@ endif()
 
 if(BUILD_LENET_LEGACY)
   foreach(n 2048 8192 16384 32768)
-    add_alexnet_test(
+    add_lenet_test(
+        lenet_n${n}_ltests
+        lenet_n_ltests.cpp
+        lenet_n${n}_legacy
+    )
+    add_lenet_test(
         lenet_n${n}_lprofile
         lenet_n_lprofile.cpp
         lenet_n${n}_legacy
     )
-endforeach()
+  endforeach()
 endif()
