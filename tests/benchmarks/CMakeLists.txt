@@ -19,3 +19,5 @@ target_compile_options(bert_cheddar_profile PRIVATE
   -g
   -fno-omit-frame-pointer
 )
+
+add_subdirectory(matvec_64)
