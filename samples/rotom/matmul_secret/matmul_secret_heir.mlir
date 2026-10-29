@@ -1,0 +1,13 @@
+// HEIR generated Layout
+module {
+  func.func @matmul_secret_secret(%arg0: !secret.secret<tensor<3x5xf32>> {heir.kernel_info = {gap_factor = 1 : i64, result_shape = array<i64: 3, 5>}, tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : (5i0 - 6i1 - 7ct + slot) mod 15 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 4 and 0 <= ct <= 1 and 0 <= slot <= 7 }">}, %arg1: !secret.secret<tensor<5x2xf32>> {heir.kernel_info = {gap_factor = 1 : i64, result_shape = array<i64: 5, 2>}, tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : (4i0 + 5i1 - 2ct + slot) mod 10 = 0 and 0 <= i0 <= 4 and 0 <= i1 <= 1 and 0 <= ct <= 1 and 0 <= slot <= 7 }">}) -> (!secret.secret<tensor<3x2xf32>> {tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : ct = 0 and (2i0 + 3i1 + slot) mod 6 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 1 and 0 <= slot <= 7 }">}) {
+    %cst = arith.constant dense<0.000000e+00> : tensor<3x2xf32>
+    %0 = secret.generic(%arg0: !secret.secret<tensor<3x5xf32>> {heir.kernel_info = {gap_factor = 1 : i64, result_shape = array<i64: 3, 5>}, tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : (5i0 - 6i1 - 7ct + slot) mod 15 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 4 and 0 <= ct <= 1 and 0 <= slot <= 7 }">}, %arg1: !secret.secret<tensor<5x2xf32>> {heir.kernel_info = {gap_factor = 1 : i64, result_shape = array<i64: 5, 2>}, tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : (4i0 + 5i1 - 2ct + slot) mod 10 = 0 and 0 <= i0 <= 4 and 0 <= i1 <= 1 and 0 <= ct <= 1 and 0 <= slot <= 7 }">}) {
+    ^body(%input0: tensor<3x5xf32>, %input1: tensor<5x2xf32>):
+      %1 = tensor_ext.assign_layout %cst <layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : ct = 0 and (-2i0 - i1 + slot) mod 8 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 1 and 0 <= slot <= 7 }">> {tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : ct = 0 and (-2i0 - i1 + slot) mod 8 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 1 and 0 <= slot <= 7 }">} : tensor<3x2xf32>
+      %2 = linalg.matmul {heir.kernel_info = {gap_factor = 1 : i64, result_shape = array<i64: 3, 2>}, secret.kernel = #secret.kernel<name = "MatmulBicyclic", force = false>, tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : ct = 0 and (2i0 + 3i1 + slot) mod 6 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 1 and 0 <= slot <= 7 }">} ins(%input0, %input1 : tensor<3x5xf32>, tensor<5x2xf32>) outs(%1 : tensor<3x2xf32>) -> tensor<3x2xf32>
+      secret.yield %2 : tensor<3x2xf32>
+    } -> (!secret.secret<tensor<3x2xf32>> {tensor_ext.layout = #tensor_ext.layout<"{ [i0, i1] -> [ct, slot] : ct = 0 and (2i0 + 3i1 + slot) mod 6 = 0 and 0 <= i0 <= 2 and 0 <= i1 <= 1 and 0 <= slot <= 7 }">})
+    return %0 : !secret.secret<tensor<3x2xf32>>
+  }
+}
