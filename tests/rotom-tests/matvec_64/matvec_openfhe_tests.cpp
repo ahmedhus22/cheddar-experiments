@@ -97,9 +97,22 @@ TEST(OpenFHESamples, Matvec64) {
     std::filesystem::path("matvec_64/results/result.bin");
   std::vector<float> actual_result = loadBinaryInput(outPath, 4096);
 
+  // Print input
+  for (size_t i = 0; i < 64; ++i) {
+     std::cout << "in_6[" << i << "] = " << in_6[i] << '\n';
+     if (in_6[i] != in_6[i+64]) {
+        std::cout << "in_6[" << i << "] != in_6[" << (i+64) << "]\n";
+     } else {
+        std::cout << "in_6[" << i << "] == in_6[" << (i+64) << "]\n";
+     }
+  }
   
   // Compare the result with Rotoms testdata
   for (size_t i = 0; i < result.size(); ++i) {
+    if ((i%64 == 0)) {  // Print every 64th value for debugging, Layout: [0:64:1][G:64]
+      std::cout << "result[" << i << "] = " << result[i]
+                << ", actual_result[" << i << "] = " << actual_result[i] << '\n';
+    }
     EXPECT_NEAR(result[i], actual_result[i], 1e-4);
   }
   EXPECT_EQ(result.size(), actual_result.size());
