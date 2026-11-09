@@ -1,8 +1,10 @@
-add_library(matvec_rotom_fhe matvec.cpp)
-target_link_libraries(matvec_rotom_fhe
-  PUBLIC
-  openfhe_interface
-)
-target_compile_options(matvec_rotom_fhe PRIVATE
-  -Wno-error=sign-compare
-)
+foreach(file matvec_rotom_openfhe matvec_heir_openfhe)
+  add_library(${file} ${file}.cpp)
+  target_link_libraries(${file}
+    PUBLIC
+    openfhe_interface
+  )
+  target_compile_options(${file} PRIVATE
+    -Wno-error=sign-compare
+  )
+endforeach()

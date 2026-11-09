@@ -1,12 +1,19 @@
-foreach(tests matvec_openfhe_tests matvec_rotom_profile)
+foreach(tests matvec_rotom_tests matvec_rotom_profile matvec_heir_profile)
   add_executable(${tests} ${tests}.cpp)
+
+  if(tests STREQUAL "matvec_heir_profile")
+    set(matvec_library matvec_heir_openfhe)
+  else()
+    set(matvec_library matvec_rotom_openfhe)
+  endif()
+
   target_link_libraries(
     ${tests}
     PRIVATE
     GTest::gtest_main
     nlohmann_json::nlohmann_json
     CUDA::cudart
-    matvec_rotom_fhe
+    ${matvec_library}
   )
   target_link_libraries(${tests}
     PUBLIC
