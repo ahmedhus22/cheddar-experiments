@@ -38,13 +38,6 @@ std::vector<float> matvec_64__decrypt__result0(CryptoContextT cc, std::vector<Ci
 CryptoContextT matvec_64__generate_crypto_context();
 CryptoContextT matvec_64__configure_crypto_context(CryptoContextT cc, PrivateKeyT sk);
 
-TimingStats context_generation;
-TimingStats key_generation;
-TimingStats eval_key_generation;
-TimingStats configuration;
-int kwarmups = 1;
-int kiterations = 3;
-double configuration_warmup_ms = 0.0;
 
 class Matvec64RotomProfile : public ::testing::Test {
 protected:
@@ -54,8 +47,6 @@ protected:
 
 
 TEST_F(Matvec64RotomProfile, Configuration) {
-
-  Benchmark benchmark;
 
   CryptoContextT cryptoContext;
   PublicKeyT publicKey;
@@ -87,15 +78,8 @@ TEST_F(Matvec64RotomProfile, Configuration) {
   benchmark.run_setup({1, 3});
 }
 
-TimingStats encryption_stats;
-TimingStats preprocessing_stats;
-TimingStats evaluation_stats;
-TimingStats decryption_stats;
-TimingStats online_total_stats;
 
 TEST_F(Matvec64RotomProfile, Inference) {
-
-  Benchmark benchmark;
 
   std::vector<float> test_input(4096);
 
@@ -134,9 +118,22 @@ TEST_F(Matvec64RotomProfile, Inference) {
   };
 
   benchmark.run_inference({1, 3});
+
+
+  std::filesystem::path outPath =
+    std::filesystem::path("matvec_64/results/result.bin");
+  std::vector<float> actual_result = loadBinaryInput_f(outPath, 4096);
+  // Compare the result with Rotoms testdata
+  for (size_t i = 0; i < result.size(); ++i) {
+    if ((i%64 == 0)) {  // Print every 64th value for debugging, Layout: [0:64:1][G:64]
+      std::cout << "result[" << i << "] = " << result[i]
+                << ", actual_result[" << i << "] = " << actual_result[i] << '\n';
+    }
+    EXPECT_NEAR(result[i], actual_result[i], 1e-4);
+  }
+  EXPECT_EQ(result.size(), actual_result.size());
+
 }
-
-
 
 
 TEST_F(Matvec64RotomProfile, Reporting) {
