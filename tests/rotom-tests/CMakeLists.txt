@@ -21,3 +21,4 @@ target_compile_options(bert_cheddar_profile PRIVATE
 )
 
 add_subdirectory(matvec_64)
+add_subdirectory(vecsum)
