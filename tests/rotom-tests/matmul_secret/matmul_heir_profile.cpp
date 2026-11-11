@@ -32,12 +32,12 @@ using PrivateKeyT = PrivateKey<DCRTPoly>;
 using PublicKeyT = PublicKey<DCRTPoly>;
 
 
-std::vector<CiphertextT> matmul_secret(CryptoContextT cc, std::vector<CiphertextT> v0, std::vector<CiphertextT> v1);
-std::vector<CiphertextT> matmul_secret__encrypt__arg0(CryptoContextT cc, std::vector<float> v0, PublicKeyT pk);
-std::vector<CiphertextT> matmul_secret__encrypt__arg1(CryptoContextT cc, std::vector<float> v0, PublicKeyT pk);
-std::vector<float> matmul_secret__decrypt__result0(CryptoContextT cc, std::vector<CiphertextT> v0, PrivateKeyT sk);
-CryptoContextT matmul_secret__generate_crypto_context();
-CryptoContextT matmul_secret__configure_crypto_context(CryptoContextT cc, PrivateKeyT sk);
+std::vector<CiphertextT> bicyclic_matmul(CryptoContextT cc, std::vector<CiphertextT> v0, std::vector<CiphertextT> v1);
+std::vector<CiphertextT> bicyclic_matmul__encrypt__arg0(CryptoContextT cc, std::vector<float> v0, PublicKeyT pk);
+std::vector<CiphertextT> bicyclic_matmul__encrypt__arg1(CryptoContextT cc, std::vector<float> v0, PublicKeyT pk);
+std::vector<float> bicyclic_matmul__decrypt__result0(CryptoContextT cc, std::vector<CiphertextT> v0, PrivateKeyT sk);
+CryptoContextT bicyclic_matmul__generate_crypto_context();
+CryptoContextT bicyclic_matmul__configure_crypto_context(CryptoContextT cc, PrivateKeyT sk);
 
 
 class MatmulSecretRotomProfile : public ::testing::Test {
@@ -55,12 +55,12 @@ TEST_F(MatmulSecretRotomProfile, Configuration) {
 
   benchmark.setup = {
     phase("Context Generation", [&] {
-        cryptoContext = matmul_secret__generate_crypto_context();
+        cryptoContext = bicyclic_matmul__generate_crypto_context();
         auto keyPair = cryptoContext->KeyGen();
         publicKey = keyPair.publicKey;
         secretKey = keyPair.secretKey;
         cryptoContext = 
-          matmul_secret__configure_crypto_context(cryptoContext, secretKey);
+          bicyclic_matmul__configure_crypto_context(cryptoContext, secretKey);
     })
   };
 
@@ -73,12 +73,12 @@ TEST_F(MatmulSecretRotomProfile, Inference) {
   // std::vector<float> test_input(4096);
 
   std::filesystem::path Path5 =
-    std::filesystem::path("matmul_secret/inputs/5.bin");
+    std::filesystem::path("matmul_secret/bicyclic/a.bin");
   std::filesystem::path Path15 =
-    std::filesystem::path("matmul_secret/inputs/15.bin");
+    std::filesystem::path("matmul_secret/bicyclic/b.bin");
 
-  std::vector<float> in_5 = loadBinaryInput_f(Path5, 2048);
-  std::vector<float> in_15 = loadBinaryInput_f(Path15, 2048);
+  std::vector<float> in_5 = loadBinaryInput_ff(Path5, 16*17);
+  std::vector<float> in_15 = loadBinaryInput_ff(Path15, 17*19);
 
   std::vector<CiphertextT> matrix1_encrypted;
   std::vector<CiphertextT> matrix2_encrypted;
@@ -86,25 +86,25 @@ TEST_F(MatmulSecretRotomProfile, Inference) {
   std::vector<float> result;
 
   // Setup crypto context and keys
-  auto cryptoContext = matmul_secret__generate_crypto_context();
+  auto cryptoContext = bicyclic_matmul__generate_crypto_context();
   auto keyPair = cryptoContext->KeyGen();
   auto publicKey = keyPair.publicKey;
   auto secretKey = keyPair.secretKey;
   cryptoContext = 
-    matmul_secret__configure_crypto_context(cryptoContext, secretKey);
+    bicyclic_matmul__configure_crypto_context(cryptoContext, secretKey);
 
   benchmark.inference = {
     phase("Encryption", [&] {
-       matrix1_encrypted = matmul_secret__encrypt__arg0(cryptoContext, in_5, publicKey);
-       matrix2_encrypted = matmul_secret__encrypt__arg1(cryptoContext, in_15, publicKey);
+       matrix1_encrypted = bicyclic_matmul__encrypt__arg0(cryptoContext, in_5, publicKey);
+       matrix2_encrypted = bicyclic_matmul__encrypt__arg1(cryptoContext, in_15, publicKey);
     }),
 
     phase("Encrypted Computation", [&] {
-      encrypted_result = matmul_secret(cryptoContext, matrix1_encrypted, matrix2_encrypted);
+      encrypted_result = bicyclic_matmul(cryptoContext, matrix1_encrypted, matrix2_encrypted);
     }),
 
     phase("Decryption", [&] {
-      result = matmul_secret__decrypt__result0(cryptoContext, encrypted_result, secretKey);
+      result = bicyclic_matmul__decrypt__result0(cryptoContext, encrypted_result, secretKey);
     })
   };
 
@@ -112,15 +112,10 @@ TEST_F(MatmulSecretRotomProfile, Inference) {
 
 
   std::filesystem::path outPath =
-    std::filesystem::path("matmul_secret/results/result.bin");
-  std::vector<float> actual_result = loadBinaryInput_f(outPath, 2048);
-  // Compare the result with Rotoms testdata
-  // 'cs': [KernelOp.MATMUL: [1:8:4];[G:32][1:4:1][0:16:1]], 'layout': [G:4][1:32:1][0:16:1]: (@ a b)
+    std::filesystem::path("matmul_secret/bicyclic/result.bin");
+  std::vector<float> actual_result = loadBinaryInput_ff(outPath, 16*19);
+  // Compare the result with testdata
   for (size_t i = 0; i < result.size(); ++i) {
-    // if ((i%64 == 0)) {  // Print every 64th value for debugging, Layout: [0:64:1][G:64]
-    //   std::cout << "result[" << i << "] = " << result[i]
-    //             << ", actual_result[" << i << "] = " << actual_result[i] << '\n';
-    // }
     EXPECT_NEAR(result[i], actual_result[i], 1e-4);
   }
   EXPECT_EQ(result.size(), actual_result.size());

@@ -1,4 +1,4 @@
-foreach(tests matmul_rotom_profile)
+foreach(tests matmul_rotom_profile matmul_heir_profile)
   add_executable(${tests} ${tests}.cpp)
 
   if(tests STREQUAL "matmul_heir_profile")
