@@ -1,2 +1,3 @@
 add_subdirectory(matvec_64)
 add_subdirectory(vector_sum)
+add_subdirectory(matmul_secret)
